@@ -1,20 +1,80 @@
 # INSPR (in situ PSF retrieval)
 In situ point spread function retrieval (INSPR) toolbox is distributed as accompanying software for manuscript: Fan Xu, Donghan Ma, Kathryn P. MacPherson, Sheng Liu, Ye Bu, Yu Wang, Yu Tang, Cheng Bi, Tim Kwok, Alexander A. Chubykin, Peng Yin, Sarah Calve, Gary E. Landreth, and Fang Huang, "Three dimensional nanoscopy of whole cells and tissues with in situ point spread function retrieval" (2020) **Nature Methods**, accept.
+
 INSPR toolbox is developed for both biplane and astigmatism-based setups. It constructs an in situ 3D point spread function (PSF) directly from the obtained single molecule dataset and features an easy-to-use user interface including all steps of 3D single molecule localization from INSPR model generation, pupil-based 3D localization (supporting both GPU with cubic spline implementation and CPU versions), drift correction, volume alignment, to super-resolution image reconstruction. It also contains a small single molecule dataset for users to run as an example.
 
-## Installation environment
-• Windows 7 or later, 64 bit.
-• MATLAB R2016b, 64 bit (downloadable at http://www.mathworks.com).
-• CUDA 7.5 compatible graphics driver (downloadable at https://developer.nvidia.com/cuda-75-downloads-archive).
+Due to the limited space of Github (<100 MB), we shrink the single-molecule dataset. The data that support the findings of this study are available from the corresponding authors upon request.  
+
+
+# Installation environment
+* Windows 7 or later, 64 bit.
+* MATLAB R2016b, 64 bit (downloadable at http://www.mathworks.com).
+* CUDA 7.5 compatible graphics driver (downloadable at https://developer.nvidia.com/cuda-75-downloads-archive).
 
 # INSPR toolbox for biplane setup
-## Installation environment
-* train/data.mat: A small training dataset containing simulated PSFs.
-* train/label.mat: Labels of the training dataset (ground truth of the parameters)
-* train/CRLB.mat: Calculated CRLB used in training
-* test/data.mat: A small test dataset
-* test/label.mat: Underlying true position to compare with smNet results
-* test/CRLB.mat: Underlying true position to compare with smNet results
+## Installation of INSPR toolbox
+1) Go to the ‘INSPR toolbox’ folder and open the ‘main.m’ file.
+2) Check the ‘support_path’ in the ‘main.m’ file to make sure that the path of the ‘Support’ folder is correct.
+3) Run the ‘main.m’ file.
+4) Check the detail manual "INSPR software user manual".
+
+
+3.	DATASET AND SOURCE CODES
+3.1	Demonstration dataset 
+Data\rawData.mat				Single molecule dataset
+Data\ config.mat				General setting parameters
+Data\tform.mat				Alignment calibration file
+Data\subregions.mat			Cropped sub-regions
+Data\probj.mat				In situ 3D PSF model
+Data\sCMOS_calibration.mat 		sCMOS calibration parameters
+Data\recon3D.mat				3D super-resolution reconstruction results
+
+3.2	INSPR source codes
+‘Main’ folder
+main.m					Main script for running INSPR
+INSPR_GUI.m				Script for INSPR GUI
+INSPR_GUI.m				INSPR GUI
+default_cfg.mat 				Default configuration for INSPR GUI
+genPupilfigs.m 				Script for generating figures of retrieved pupil
+export2csv.m				Script for exporting to ‘csv’ format
+srhist_color.m				Script for generating color-coded super-resolution image
+
+‘Biplane registration’ folder
+biplane_registration.m			Script for biplane registration
+
+‘Segmentation’ folder
+crop_subregion.m				Script for segmentation
+cMakeSubregions.mexw64			Mex function for cropping sub-regions
+
+‘INSPR model generation’ folder
+INSPR_model_generation.m		Script for estimating in situ 3D PSF
+gen_initPupil.m	Script for generating initial pupil
+classify_twoPlanes_par.m	Script for classification and 2D alignment, when XY_shift_mode is ‘Separate shift’
+
+classify_twoPlanes_together_par.m	Script for classification and 2D alignment, when XY_shift_mode is ‘Together shift’
+registration_in_each_channel.m	Script for 2D alignment, when XY_shift_mode is ‘Separate shift’
+registration_in_biplane.m	Script for 2D alignment, when XY_shift_mode is ‘Together shift’
+cc2.m					Script for calculating 2D cross correlation
+PRPSF_aber_fromAveZ.m			Script for estimating pupil
+merge_Z_ave_img.m			Script for merging same axial position
+realign_Z_ave_img.m			Script for realigning axial position
+subregion_normalization.m			Script for normalizing sub-regions
+
+‘3D localization’ folder
+analysis3D_fromPupil.m			Script for 3D reconstruction
+crop_subregion_without_transData.m	Script for segmentation
+loc_channel_specific_model.m		Script for pupil-based 3D localization
+loc_channel_specific_model_CPU.m	Script for pupil-based 3D localization: CPU version
+genIniguess.m				Script for estimating initial lateral position
+geniniBiplane_z_mat_parfor.m		Script for estimating initial axial position
+cal_model_affine.m			Script for calculating affine matrix in model
+gensamplepsf_biplane.m			Script for pre-generating channel specific model
+genpsf_biplane_real.m			Script for generating model from pupil
+cuda_channel_specific_model.mexw64	Mex function for 3D localization
+CalDevBi.m				Script for calculating image derivatives: CPU version
+gen_calCRLB_bi.m			Script for calling CRLB generation: CPU version
+CalCRLB_bi.m				Script for calculating CRLB: CPU version
+gen_LLR_bi.m				Script for calculating log-likelihood ratio: CPU version
 
 
 ## Files included in this package
