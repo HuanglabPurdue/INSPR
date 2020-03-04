@@ -92,7 +92,7 @@ Due to the limited space of Github (<100 MB), we shrink the single-molecule data
 4) Check the detail manual "INSPR astigmatism user manual".
 ```
 
-## DATASET AND SOURCE CODES
+## Dataset and source codes
 ### Demonstration dataset 
 * Data\rawData.mat: Single molecule dataset
 * Data\config.mat: General setting parameters
