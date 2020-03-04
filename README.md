@@ -32,7 +32,7 @@ Due to the limited space of Github (<100 MB), we shrink the single-molecule data
 
 
 ### INSPR source codes
-‘Main’ folder
+**‘Main’ folder**
 * main.m: Main script for running INSPR
 * INSPR_GUI.m: Script for INSPR GUI
 * INSPR_GUI.fig: INSPR GUI
@@ -42,16 +42,16 @@ Due to the limited space of Github (<100 MB), we shrink the single-molecule data
 * srhist_color.m: Script for generating color-coded super-resolution image
 
 
-‘Biplane registration’ folder
+**‘Biplane registration’ folder**
 * biplane_registration.m: Script for biplane registration
 
 
-‘Segmentation’ folder
+**‘Segmentation’ folder**
 * crop_subregion.m: Script for segmentation
 * cMakeSubregions.mexw64: Mex function for cropping sub-regions
 
 
-‘INSPR model generation’ folder
+**‘INSPR model generation’ folder**
 * INSPR_model_generation.m: Script for estimating in situ 3D PSF
 * gen_initPupil.m: Script for generating initial pupil
 * classify_twoPlanes_par.m: Script for classification and 2D alignment, when XY_shift_mode is ‘Separate shift’
@@ -65,7 +65,7 @@ Due to the limited space of Github (<100 MB), we shrink the single-molecule data
 * subregion_normalization.m: Script for normalizing sub-regions
 
 
-‘3D localization’ folder
+**‘3D localization’ folder**
 * analysis3D_fromPupil.m: Script for 3D reconstruction
 * crop_subregion_without_transData.m: Script for segmentation
 * loc_channel_specific_model.m: Script for pupil-based 3D localization
@@ -103,7 +103,7 @@ Due to the limited space of Github (<100 MB), we shrink the single-molecule data
 
 
 ### INSPR source codes
-‘Main’ folder
+**‘Main’ folder**
 * main.m: Main script for running INSPR
 * INSPR_ast_GUI.m: Script for INSPR astigmatism GUI
 * INSPR_ast_GUI.fig: INSPR astigmatism GUI
@@ -113,12 +113,12 @@ Due to the limited space of Github (<100 MB), we shrink the single-molecule data
 * srhist_color.m: Script for generating color-coded super-resolution image
 
 
-‘Segmentation’ folder
+**‘Segmentation’ folder**
 * crop_subregion_ast.m: Script for segmentation
 * cMakeSubregions.mexw64: Mex function for cropping sub-regions
 
 
-‘INSPR model generation’ folder
+**‘INSPR model generation’ folder**
 * INSPR_model_generation_ast.m: Script for estimating in situ 3D PSF
 * gen_initPupil.m: Script for generating initial pupil
 * classify_onePlane_par.m: Script for classification and 2D alignment
@@ -128,7 +128,7 @@ Due to the limited space of Github (<100 MB), we shrink the single-molecule data
 * subregion_normalization.m: Script for normalizing sub-regions
 
 
-‘3D localization’ folder
+**‘3D localization’ folder**
 * analysis3D_fromPupil_ast.m: Script for 3D reconstruction
 * crop_subregion_var_ast.m: Script for segmentation
 * loc_ast_model.m: Script for pupil-based 3D localization
