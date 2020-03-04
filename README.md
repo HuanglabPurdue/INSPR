@@ -13,7 +13,7 @@ Due to the limited space of Github (<100 MB), we shrink the single-molecule data
 
 # INSPR toolbox for biplane setup
 ## Installation of INSPR toolbox
-1) Go to the ‘INSPR toolbox’ folder and open the ‘main.m’ file.
+1) Go to the ‘INSPR for biplane setup/INSPR toolbox’ folder and open the ‘main.m’ file.
 2) Check the ‘support_path’ in the ‘main.m’ file to make sure that the path of the ‘Support’ folder is correct.
 3) Run the ‘main.m’ file.
 4) Check the detail manual "INSPR software user manual".
@@ -21,77 +21,137 @@ Due to the limited space of Github (<100 MB), we shrink the single-molecule data
 ## DATASET AND SOURCE CODES
 ### Demonstration dataset 
 ``` Demonstration dataset  
-Data\rawData.mat				Single molecule dataset
-Data\ config.mat				General setting parameters
-Data\tform.mat				Alignment calibration file
-Data\subregions.mat			Cropped sub-regions
-Data\probj.mat				In situ 3D PSF model
-Data\sCMOS_calibration.mat 		sCMOS calibration parameters
-Data\recon3D.mat				3D super-resolution reconstruction results
+Data\rawData.mat				            Single molecule dataset
+Data\ config.mat				            General setting parameters
+Data\tform.mat				              Alignment calibration file
+Data\subregions.mat			            Cropped sub-regions
+Data\probj.mat				              In situ 3D PSF model
+Data\sCMOS_calibration.mat 		      sCMOS calibration parameters
+Data\recon3D.mat				            3D super-resolution reconstruction results
 ```
 
-###	INSPR source codes
+### INSPR source codes
 ‘Main’ folder
 ``` ‘Main’ folder
-main.m					Main script for running INSPR
-INSPR_GUI.m				Script for INSPR GUI
-INSPR_GUI.m				INSPR GUI
-default_cfg.mat 				Default configuration for INSPR GUI
-genPupilfigs.m 				Script for generating figures of retrieved pupil
-export2csv.m				Script for exporting to ‘csv’ format
-srhist_color.m				Script for generating color-coded super-resolution image
+main.m                              Main script for running INSPR
+INSPR_GUI.m				                  Script for INSPR GUI
+INSPR_GUI.fig				                INSPR GUI
+default_cfg.mat 				            Default configuration for INSPR GUI
+genPupilfigs.m 				              Script for generating figures of retrieved pupil
+export2csv.m				                Script for exporting to ‘csv’ format
+srhist_color.m				              Script for generating color-coded super-resolution image
 ```
 
 ‘Biplane registration’ folder
 ``` ‘Biplane registration’ folder
-biplane_registration.m			Script for biplane registration
+biplane_registration.m			        Script for biplane registration
 ```
 
 ‘Segmentation’ folder
 ``` ‘Segmentation’ folder
-crop_subregion.m				Script for segmentation
-cMakeSubregions.mexw64			Mex function for cropping sub-regions
+crop_subregion.m				            Script for segmentation
+cMakeSubregions.mexw64		        	Mex function for cropping sub-regions
 ```
 
 ‘INSPR model generation’ folder
 ```‘INSPR model generation’ folder
-INSPR_model_generation.m		Script for estimating in situ 3D PSF
+INSPR_model_generation.m		        Script for estimating in situ 3D PSF
 gen_initPupil.m	Script for generating initial pupil
-classify_twoPlanes_par.m	Script for classification and 2D alignment, when XY_shift_mode is ‘Separate shift’
-classify_twoPlanes_together_par.m	Script for classification and 2D alignment, when XY_shift_mode is ‘Together shift’
-registration_in_each_channel.m	Script for 2D alignment, when XY_shift_mode is ‘Separate shift’
-registration_in_biplane.m	Script for 2D alignment, when XY_shift_mode is ‘Together shift’
-cc2.m					Script for calculating 2D cross correlation
-PRPSF_aber_fromAveZ.m			Script for estimating pupil
-merge_Z_ave_img.m			Script for merging same axial position
-realign_Z_ave_img.m			Script for realigning axial position
-subregion_normalization.m			Script for normalizing sub-regions
+classify_twoPlanes_par.m	          Script for classification and 2D alignment, when XY_shift_mode is ‘Separate shift’
+classify_twoPlanes_together_par.m	  Script for classification and 2D alignment, when XY_shift_mode is ‘Together shift’
+registration_in_each_channel.m	    Script for 2D alignment, when XY_shift_mode is ‘Separate shift’
+registration_in_biplane.m	          Script for 2D alignment, when XY_shift_mode is ‘Together shift’
+cc2.m					                      Script for calculating 2D cross correlation
+PRPSF_aber_fromAveZ.m			          Script for estimating pupil
+merge_Z_ave_img.m			              Script for merging same axial position
+realign_Z_ave_img.m			            Script for realigning axial position
+subregion_normalization.m		      	Script for normalizing sub-regions
 ```
 
 ‘3D localization’ folder
 ``` ‘3D localization’ folder
-analysis3D_fromPupil.m			Script for 3D reconstruction
+analysis3D_fromPupil.m			        Script for 3D reconstruction
 crop_subregion_without_transData.m	Script for segmentation
-loc_channel_specific_model.m		Script for pupil-based 3D localization
-loc_channel_specific_model_CPU.m	Script for pupil-based 3D localization: CPU version
-genIniguess.m				Script for estimating initial lateral position
-geniniBiplane_z_mat_parfor.m		Script for estimating initial axial position
-cal_model_affine.m			Script for calculating affine matrix in model
-gensamplepsf_biplane.m			Script for pre-generating channel specific model
-genpsf_biplane_real.m			Script for generating model from pupil
+loc_channel_specific_model.m		    Script for pupil-based 3D localization
+loc_channel_specific_model_CPU.m	  Script for pupil-based 3D localization: CPU version
+genIniguess.m			                	Script for estimating initial lateral position
+geniniBiplane_z_mat_parfor.m		    Script for estimating initial axial position
+cal_model_affine.m			            Script for calculating affine matrix in model
+gensamplepsf_biplane.m			        Script for pre-generating channel specific model
+genpsf_biplane_real.m			          Script for generating model from pupil
 cuda_channel_specific_model.mexw64	Mex function for 3D localization
-CalDevBi.m				Script for calculating image derivatives: CPU version
-gen_calCRLB_bi.m			Script for calling CRLB generation: CPU version
-CalCRLB_bi.m				Script for calculating CRLB: CPU version
-gen_LLR_bi.m				Script for calculating log-likelihood ratio: CPU version
+CalDevBi.m				                  Script for calculating image derivatives: CPU version
+gen_calCRLB_bi.m			              Script for calling CRLB generation: CPU version
+CalCRLB_bi.m				                Script for calculating CRLB: CPU version
+gen_LLR_bi.m				                Script for calculating log-likelihood ratio: CPU version
 ```
 
-## Files included in this package
-### Content of smNet software (Pytorch)
-**Sample Data:**
-* train/data.mat: A small training dataset containing simulated PSFs.
-* train/label.mat: Labels of the training dataset (ground truth of the parameters)
-* train/CRLB.mat: Calculated CRLB used in training
-* test/data.mat: A small test dataset
-* test/label.mat: Underlying true position to compare with smNet results
-* test/CRLB.mat: Underlying true position to compare with smNet results
+
+# INSPR toolbox for astigmatism-based setup
+## Installation of INSPR astigmatism toolbox
+1) Go to the ‘INSPR for astigmatism-based setup/INSPR astigmatism toolbox’ folder and open the ‘main.m’ file.
+2) Check the ‘support_path’ in the ‘main.m’ file to make sure that the path of the ‘Support’ folder is correct.
+3) Run the ‘main.m’ file.
+4) Check the detail manual "INSPR astigmatism user manual".
+
+## DATASET AND SOURCE CODES
+### Demonstration dataset 
+``` Demonstration dataset  
+Data\rawData.mat				            Single molecule dataset
+Data\config.mat				              General setting parameters
+Data\subregions.mat			            Cropped sub-regions
+Data\probj.mat				              In situ 3D PSF model
+Data\sCMOS_calibration_ast.mat 		  sCMOS calibration parameters
+Data\recon3D.mat				            3D super-resolution reconstruction results
+```
+
+### INSPR source codes
+‘Main’ folder
+``` ‘Main’ folder
+main.m					                    Main script for running INSPR
+INSPR_ast_GUI.m				              Script for INSPR astigmatism GUI
+INSPR_ast_GUI.fig			              INSPR astigmatism GUI
+default_cfg.mat 				            Default configuration for INSPR astigmatism GUI
+genPupilfigs.m 				              Script for generating figures of retrieved pupil
+export2csv.m				                Script for exporting to ‘csv’ format
+srhist_color.m				              Script for generating color-coded super-resolution image
+```
+
+‘Segmentation’ folder
+``` ‘Segmentation’ folder
+crop_subregion_ast.m			          Script for segmentation
+cMakeSubregions.mexw64			        Mex function for cropping sub-regions
+```
+
+‘INSPR model generation’ folder
+```‘INSPR model generation’ folder
+INSPR_model_generation_ast.m		    Script for estimating in situ 3D PSF
+gen_initPupil.m	                    Script for generating initial pupil
+classify_onePlane_par.m	            Script for classification and 2D alignment
+registration_in_each_channel.m	    Script for 2D alignment
+cc2.m					                      Script for calculating 2D cross correlation
+PRPSF_aber_fromAveZ_ast.m		        Script for estimating pupil
+subregion_normalization.m			      Script for normalizing sub-regions
+```
+
+‘3D localization’ folder
+```‘3D localization’ folder
+analysis3D_fromPupil_ast.m		    Script for 3D reconstruction
+crop_subregion_var_ast.m		    	Script for segmentation
+loc_ast_model.m				            Script for pupil-based 3D localization
+loc_ast_model_CPU.m			          Script for pupil-based 3D localization: CPU version
+genIniguess.m				              Script for estimating initial lateral position
+genini_z_mat_parfor.m			        Script for estimating initial axial position
+gensamplepsf.m				            Script for pre-generating 3D model
+genpsf_real.m				              Script for generating model from pupil
+genpsfstruct.m				            Script for calculating image gradient
+cuda_ast_model.mexw64			        Mex function for 3D localization
+CalDev.m					                Script for calculating image derivatives: CPU version
+gen_calCRLB.m				              Script for calling CRLB generation: CPU version
+CalCRLB.m				                  Script for calculating CRLB: CPU version
+gen_LLR.m			                  	Script for calculating log-likelihood ratio: CPU version
+```
+
+# Acknowledgements
+We would like to thank Karthigeyan Dhanasekaran and Patrick Lusk (Yale University) for sharing the labeling protocol of Nup98 and interpretation of the resolved Nup98 structures. We thank Michael J. Mlodzianoski for initial instrument design, Sha An for help in instrument alignment and sample preparation, and David A. Miller for providing labeling protocols of mitochondria and microtubules. F.X., D.M., S.L., C.B., and F.H. were supported by grants from the NIH (GM119785) and DARPA (D16AP00093). K.P.M. and G.E.L were supported by grants from the NIH (AG051495 and AG050597). Y.B. and S.C. were supported by a grant from the NIH (R01AR071359). Y.W. and P.Y. were supported by a grant from the NIH (1R01EB018659) and Harvard Medical School Dean’s Initiative Grant. 
+
