@@ -20,15 +20,14 @@ Due to the limited space of Github (<100 MB), we shrink the single-molecule data
 
 ## Dataset and source codes
 ### Demonstration dataset 
-``` Demonstration dataset  
--- Data\rawData.mat: Single molecule dataset
+* Data\rawData.mat: Single molecule dataset
 * Data\ config.ma: General setting parameters
 * Data\tform.mat: Alignment calibration file
 * Data\subregions.mat: Cropped sub-regions
 * Data\probj.mat: In situ 3D PSF model
 * Data\sCMOS_calibration.mat: sCMOS calibration parameters
 * Data\recon3D.mat: 3D super-resolution reconstruction results
-```
+
 
 ### INSPR source codes
 ‘Main’ folder
