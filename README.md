@@ -1,10 +1,11 @@
 # INSPR (in situ PSF retrieval)
-In situ point spread function retrieval (INSPR) toolbox is distributed as accompanying software for manuscript: Fan Xu, Donghan Ma, Kathryn P. MacPherson, Sheng Liu, Ye Bu, Yu Wang, Yu Tang, Cheng Bi, Tim Kwok, Alexander A. Chubykin, Peng Yin, Sarah Calve, Gary E. Landreth, and Fang Huang, "Three dimensional nanoscopy of whole cells and tissues with in situ point spread function retrieval" (2020) **Nature Methods**, accept.
+*In situ* point spread function retrieval (INSPR) toolbox is distributed as accompanying software for manuscript: Fan Xu, Donghan Ma, Kathryn P. MacPherson, Sheng Liu, Ye Bu, Yu Wang, Yu Tang, Cheng Bi, Tim Kwok, Alexander A. Chubykin, Peng Yin, Sarah Calve, Gary E. Landreth, and Fang Huang, "Three dimensional nanoscopy of whole cells and tissues with in situ point spread function retrieval" (2020) **Nature Methods**, accept.
 
-INSPR toolbox is developed for both biplane and astigmatism-based setups. It constructs an in situ 3D point spread function (PSF) directly from the obtained single molecule dataset and features an easy-to-use user interface including all steps of 3D single molecule localization from INSPR model generation, pupil-based 3D localization (supporting both GPU with cubic spline implementation and CPU versions), drift correction, volume alignment, to super-resolution image reconstruction. It also contains a small single molecule dataset for users to run as an example.
+INSPR toolbox is developed for both biplane and astigmatism-based setups. It constructs an *in situ* 3D point spread function (PSF) directly from the obtained single molecule dataset and features an easy-to-use user interface including all steps of 3D single molecule localization from INSPR model generation, pupil-based 3D localization (supporting both GPU with cubic spline implementation and CPU versions), drift correction, volume alignment, to super-resolution image reconstruction. It also contains a small single molecule dataset for users to run as an example.
 
 Due to the limited space of Github (<100 MB), we shrink the single-molecule dataset. The data that support the findings of this study are available from the corresponding authors upon request.  
 
+Note: The targe of INSPR is to deals with whole cell and tissue specimens. If your specimens are very thin, the range of localization isn’t enough to be reliable for a good INSPR. The better way is to use *in vitro* calibration, such as phase retrieval, cubic spline and Zola3D based on beads on the coverslip. 
 
 # Installation environment
 * Windows 7 or later, 64 bit.
