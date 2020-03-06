@@ -834,7 +834,10 @@ if isfield(data_empupil,'qd2_registered')
     data_empupil.seg_display = seg_display;
 
     num_subregion = size(subregion_ch1,3);
-    msgbox({'Finish segmentation!' ['There are ' num2str(num_subregion) ' subregion images']}); 
+    msgbox({'Finish segmentation!' ['There are ' num2str(num_subregion) ' subregion images']});
+    if num_subregion < 1000
+         msgbox('Warning! Less number of sub regions!');
+    end
     
     display(['Finish segmentation! There are ' num2str(num_subregion) ' subregion images']);
     

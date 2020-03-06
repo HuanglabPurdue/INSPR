@@ -78,4 +78,10 @@ end
 
 end
 
+index_number = length(find(index_record_Zplanes==1));
+
+if index_number <= 5
+    msgbox('Warning! The range of localization isn’t enough for reliable model generation!');
+end
+
 
