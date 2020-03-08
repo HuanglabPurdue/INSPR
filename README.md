@@ -146,9 +146,9 @@ Note: The target of INSPR is to deal with whole cell and tissue specimens. If th
 * gen_LLR.m: Script for calculating log-likelihood ratio: CPU version
 
 # Mex function for 3D localization
-Mex functions include pupil-based 3D localization for both biplane and astigmatism-based setup (running on GPU with cubic spline implementation).
+Mex functions include pupil-based 3D localization for both biplane and astigmatism-based setup (running on GPU with cubic spline implementation). 
 
-The detail codes in 'Mex function for 3D localization' folder.
+The detail codes are in 'Mex function for 3D localization' folder.
 
 
 # Acknowledgements
