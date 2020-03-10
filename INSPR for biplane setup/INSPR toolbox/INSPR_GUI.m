@@ -481,7 +481,7 @@ global data_empupil
 %%
 display('Setup parameters...');
 % Draw set figure
-f_set = figure('Position',[600 400 400 600],'Name','Setup parameters');
+f_set = figure('Position',[600 100 400 600],'Name','Setup parameters');
 
 %static text
 uicontrol(f_set, 'Style','text','String','Biplane distance (µm)','FontSize',10,'Position',[50 520 140 50],...
@@ -1396,7 +1396,7 @@ function recon_rej_change_pushbutton_Callback(hObject, eventdata, handles)
 global data_empupil 
 
 % Draw rejection figure
-f_rej = figure('Position',[600 600 400 400],'Name','Rejection parameters');
+f_rej = figure('Position',[600 200 400 400],'Name','Rejection parameters');
 
 %static text
 uicontrol(f_rej, 'Style','text','String','Min photon','FontSize',10,'Position',[50 300 100 50],...
@@ -1511,7 +1511,7 @@ function recon_dc_change_pushbutton_Callback(hObject, eventdata, handles)
 global data_empupil 
 
 % Draw DC figure
-f_dc = figure('Position',[600 600 350 300],'Name','Drift correction parameters');
+f_dc = figure('Position',[600 200 350 300],'Name','Drift correction parameters');
 
 % static text
 uicontrol(f_dc, 'Style','text','String','Frame bin','FontSize',10,'Position',[50 200 100 50],...
@@ -1666,7 +1666,7 @@ function display_set_pushbutton_Callback(~, eventdata, handles)
 global data_empupil
 
 % Draw DC figure
-f_display = figure('Position',[600 600 350 260],'Name','Set display parameters');
+f_display = figure('Position',[600 200 350 260],'Name','Set display parameters');
 
 % static text
 uicontrol(f_display, 'Style','text','String','SR image high bound','FontSize',10,'Position',[50 150 150 50],...
@@ -1900,7 +1900,7 @@ function pupil_change_pushbutton_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 global data_empupil
 
-f_init = figure('Position',[600 600 1000 150],'Name','Initial Zernike value');
+f_init = figure('Position',[600 400 1000 150],'Name','Initial Zernike value');
 
 cnames = {'Ast','DAst','Coma x','Coma y','1st Sph','Trefoil x','Trefoil y','2nd Ast','2nd DAst',...
     '2nd Coma x','2nd Coma y','2nd Sph','Tetrafoil x','Tetrafoil y','2nd Trefoil x','2nd Trefoil y',...
