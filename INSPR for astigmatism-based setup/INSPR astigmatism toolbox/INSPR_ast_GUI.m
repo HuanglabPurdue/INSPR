@@ -309,7 +309,7 @@ else
        msgbox('Finish importing setup configuration!');
    else
        
-       msgbox('Please import the corrected data!');
+       msgbox('Please import the correct data!');
    end
 
 end
@@ -1000,7 +1000,7 @@ else
            if isfield(tmp,'probj')
                probj_all{ii} = tmp.probj;
            else
-               msgbox('Please import the corrected data!');
+               msgbox('Please import the correct data!');
                return;
            end
        end
@@ -1012,7 +1012,7 @@ else
        if isfield(tmp,'probj')                 
            probj_all{1} = tmp.probj;
        else
-           msgbox('Please import the corrected data!');
+           msgbox('Please import the correct data!');
            return;
        end
        msgbox({'Finish importing the pupil model!' ['You choose ' num2str(loopn) ' pupil model']});
@@ -2079,7 +2079,7 @@ else
        msgbox('Finish importing reconstruction result!');
        
    else
-       msgbox('Please import the corrected data!');
+       msgbox('Please import the correct data!');
    end
 end
 
