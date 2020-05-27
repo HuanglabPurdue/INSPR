@@ -1,5 +1,5 @@
 # INSPR (*in situ* PSF retrieval)
-*In situ* point spread function retrieval (INSPR) toolbox is distributed as accompanying software for manuscript: Fan Xu, Donghan Ma, Kathryn P. MacPherson, Sheng Liu, Ye Bu, Yu Wang, Yu Tang, Cheng Bi, Tim Kwok, Alexander A. Chubykin, Peng Yin, Sarah Calve, Gary E. Landreth, and Fang Huang, "Three-dimensional nanoscopy of whole cells and tissues with in situ point spread function retrieval" (2020) **Nature Methods**, Advanced Online Publication, https://www.nature.com/articles/s41592-020-0816-x
+*In situ* point spread function retrieval (INSPR) toolbox is distributed as accompanying software for manuscript: Fan Xu, Donghan Ma, Kathryn P. MacPherson, Sheng Liu, Ye Bu, Yu Wang, Yu Tang, Cheng Bi, Tim Kwok, Alexander A. Chubykin, Peng Yin, Sarah Calve, Gary E. Landreth, and Fang Huang, "Three-dimensional nanoscopy of whole cells and tissues with in situ point spread function retrieval" (2020) **Nature Methods**, 17(5): 531-540, https://www.nature.com/articles/s41592-020-0816-x
 
 INSPR toolbox is developed for both biplane and astigmatism-based setups. It constructs an *in situ* 3D point spread function (PSF) directly from the obtained single molecule dataset and features an easy-to-use user interface including all steps of 3D single molecule localization from INSPR model generation, pupil-based 3D localization (supporting both GPU with cubic spline implementation and CPU versions), drift correction, volume alignment, to super-resolution image reconstruction. It also contains a small single molecule dataset for users to run as an example.
 
@@ -154,6 +154,7 @@ The detail codes are in 'Mex function for 3D localization' folder.
 
 Please cite INSPR in your publications if it helps your research:
 
+``` Citation
 @article{xu2020three,
   title={Three-dimensional nanoscopy of whole cells and tissues with in situ point spread function retrieval},
   author={Xu, Fan and Ma, Donghan and MacPherson, Kathryn P and Liu, Sheng and Bu, Ye and Wang, Yu and Tang, Yu and Bi, Cheng and Kwok, Tim and Chubykin, Alexander A and others},
@@ -164,7 +165,7 @@ Please cite INSPR in your publications if it helps your research:
   year={2020},
   publisher={Nature Publishing Group}
 }
-
+```
 
 # Acknowledgements
 We would like to thank Karthigeyan Dhanasekaran and Patrick Lusk (Yale University) for sharing the labeling protocol of Nup98 and interpretation of the resolved Nup98 structures. We thank Michael J. Mlodzianoski for initial instrument design, Sha An for help in instrument alignment and sample preparation, and David A. Miller for providing labeling protocols of mitochondria and microtubules. F.X., D.M., S.L., C.B., and F.H. were supported by grants from the NIH (GM119785) and DARPA (D16AP00093). K.P.M. and G.E.L were supported by grants from the NIH (AG051495 and AG050597). Y.B. and S.C. were supported by a grant from the NIH (R01AR071359). Y.W. and P.Y. were supported by a grant from the NIH (1R01EB018659) and Harvard Medical School Dean’s Initiative Grant. 
