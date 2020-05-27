@@ -150,6 +150,21 @@ Mex functions include pupil-based 3D localization for both biplane and astigmati
 
 The detail codes are in 'Mex function for 3D localization' folder.
 
+# Citation
+
+Please cite INSPR in your publications if it helps your research:
+
+@article{xu2020three,
+  title={Three-dimensional nanoscopy of whole cells and tissues with in situ point spread function retrieval},
+  author={Xu, Fan and Ma, Donghan and MacPherson, Kathryn P and Liu, Sheng and Bu, Ye and Wang, Yu and Tang, Yu and Bi, Cheng and Kwok, Tim and Chubykin, Alexander A and others},
+  journal={Nature Methods},
+  volume={17},
+  number={5},
+  pages={531--540},
+  year={2020},
+  publisher={Nature Publishing Group}
+}
+
 
 # Acknowledgements
 We would like to thank Karthigeyan Dhanasekaran and Patrick Lusk (Yale University) for sharing the labeling protocol of Nup98 and interpretation of the resolved Nup98 structures. We thank Michael J. Mlodzianoski for initial instrument design, Sha An for help in instrument alignment and sample preparation, and David A. Miller for providing labeling protocols of mitochondria and microtubules. F.X., D.M., S.L., C.B., and F.H. were supported by grants from the NIH (GM119785) and DARPA (D16AP00093). K.P.M. and G.E.L were supported by grants from the NIH (AG051495 and AG050597). Y.B. and S.C. were supported by a grant from the NIH (R01AR071359). Y.W. and P.Y. were supported by a grant from the NIH (1R01EB018659) and Harvard Medical School Dean’s Initiative Grant. 
