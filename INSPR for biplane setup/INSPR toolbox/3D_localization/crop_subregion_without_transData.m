@@ -6,7 +6,7 @@
 %                                   West Lafayette, Indiana
 %                                   USA
 %
-%     Author: Fan Xu, Jan 2020
+%     Author: Fan Xu, July 2020
 %%  
 function [subregion_ch1,subregion_ch2,subvar_ch1,subvar_ch2,frame,l,t,offset_seg] = crop_subregion_without_transData(qd1,qd2,tform,boxsz,thresh,setup)
 
@@ -32,6 +32,20 @@ end
 qd1_in(qd1_in<=0) = 1e-6;
 qd2_in(qd2_in<=0) = 1e-6;
 
+% background subtraction
+if setup.is_bg == 1
+    filter_n = 101;
+    bg_img_1 = medfilt1(qd1_in,filter_n,[],3);
+    bg_img_2 = medfilt1(qd2_in,filter_n,[],3);
+    
+    subtract_img_1 = qd1_in - bg_img_1;
+    subtract_img_2 = qd2_in - bg_img_2;
+    subtract_img_1(subtract_img_1<=0) = 1e-6;
+    subtract_img_2(subtract_img_2<=0) = 1e-6;
+    
+    qd1_in = subtract_img_1;
+    qd2_in = subtract_img_2;
+end
 
 %transfer qd2 to find center peak
 qd2_trans = imwarp(qd2_in,tform,'cubic','OutputView',imref2d(size(qd2_in)));

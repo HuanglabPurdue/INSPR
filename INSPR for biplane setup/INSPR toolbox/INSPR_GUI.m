@@ -8,7 +8,7 @@ function varargout = INSPR_GUI(varargin)
 %                                   West Lafayette, Indiana
 %                                   USA
 %
-%     Author: Fan Xu, December 2019
+%     Author: Fan Xu, July 2020
 %
 
 gui_Singleton = 1;
@@ -67,6 +67,7 @@ data_empupil.setup.gain = 2.0;
 data_empupil.setup.is_sCMOS = 0;    %0 for EMCCD camera; 1 for sCMOS camera
 data_empupil.setup.sCMOS_input = []; 
 data_empupil.setup.is_imgsz = 1;    % 0 for image size smaller than 100 x 100 pixels
+data_empupil.setup.is_bg = 0;       %default is no background subtraction
 
 
 % pupil parameters
@@ -92,6 +93,8 @@ data_empupil.recon.isSeg = 1;
 data_empupil.recon.isRej = 1;
 data_empupil.recon.isDC = 1;
 data_empupil.recon.isGPU = 0;   %default is CPU version
+data_empupil.recon.is_bg = 0;   %default is no background subtraction
+
 
 data_empupil.recon.seg_thresh_low = 25; %segmentation threshold
 data_empupil.recon.seg_thresh_high = 40;
@@ -293,8 +296,26 @@ else
                set(handles.seg_show_img_pushbutton,'Enable','off');
            end
            
-           data_empupil.qd1 = tmp.qd1(:,:,:);
-           data_empupil.qd2 = tmp.qd2(:,:,:);
+           
+           if data_empupil.setup.is_sCMOS   %sCMOS case
+               % sCMOS parameters
+               offsetim_ch1 = repmat(data_empupil.setup.sCMOS_input.ccdoffset_ch1,[1 1 size(tmp.qd1,3)]);
+               offsetim_ch2 = repmat(data_empupil.setup.sCMOS_input.ccdoffset_ch2,[1 1 size(tmp.qd2,3)]);
+               
+               gainim_ch1 = repmat(data_empupil.setup.sCMOS_input.gain_ch1,[1 1 size(tmp.qd1,3)]);
+               gainim_ch2 = repmat(data_empupil.setup.sCMOS_input.gain_ch2,[1 1 size(tmp.qd2,3)]);
+               
+               qd1_in = (tmp.qd1 - offsetim_ch1) ./ gainim_ch1;
+               qd2_in = (tmp.qd2 - offsetim_ch2) ./ gainim_ch2;
+           else    %EMCCD case
+               qd1_in = (tmp.qd1 - data_empupil.setup.offset) /data_empupil.setup.gain;
+               qd2_in = (tmp.qd2 - data_empupil.setup.offset) /data_empupil.setup.gain;
+           end
+           qd1_in(qd1_in<=0) = 1e-6;
+           qd2_in(qd2_in<=0) = 1e-6;
+
+%            data_empupil.qd1 = tmp.qd1(:,:,:);
+%            data_empupil.qd2 = tmp.qd2(:,:,:);
            
            data_empupil.display.imagesz = size(tmp.qd1,1);
            
@@ -303,8 +324,30 @@ else
            else
                data_empupil.setup.is_imgsz = 0;
            end
-           msgbox('Finish importing biplane data!');
            
+           if data_empupil.setup.is_bg == 1
+               filter_n = 101;
+               bg_img_1 = medfilt1(qd1_in,filter_n,[],3);
+               bg_img_2 = medfilt1(qd2_in,filter_n,[],3);
+               
+               data_empupil.bg_img_1 = bg_img_1;
+               data_empupil.bg_img_2 = bg_img_2;
+               
+               subtract_img_1 = qd1_in - bg_img_1;
+               subtract_img_2 = qd2_in - bg_img_2;
+               subtract_img_1(subtract_img_1<=0) = 1e-6;
+               subtract_img_2(subtract_img_2<=0) = 1e-6;
+               
+               data_empupil.qd1 = subtract_img_1;
+               data_empupil.qd2 = subtract_img_2;
+               
+               msgbox('Finish subtracting background and importing biplane data!');
+           else
+               data_empupil.qd1 = qd1_in;
+               data_empupil.qd2 = qd2_in;
+               
+               msgbox('Finish importing biplane data!');
+           end
        else
            msgbox('Plane1 and plane2 should be the same size!');
        end
@@ -1637,6 +1680,12 @@ if data_empupil.recon.isGPU
         return;
     end  
 end
+
+if data_empupil.recon.is_bg == 1    % whether subtract background
+    data_empupil.setup.is_bg = 1; 
+else
+    data_empupil.setup.is_bg = 0;
+end
     
 %SMLM pupil fitting
 srobj = analysis3D_fromPupil(data_empupil.recon, data_empupil.tform, data_empupil.setup);
@@ -2470,4 +2519,63 @@ function display_import_edit_CreateFcn(hObject, eventdata, handles)
 %       See ISPC and COMPUTER.
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in recon_bg_checkbox.
+function recon_bg_checkbox_Callback(hObject, eventdata, handles)
+% hObject    handle to recon_bg_checkbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of recon_bg_checkbox
+
+global data_empupil
+
+if get(handles.recon_bg_checkbox,'Value')==1
+    data_empupil.recon.is_bg = 1;
+else
+    data_empupil.recon.is_bg = 0;
+end
+
+
+% --- Executes on button press in data_bg_checkbox.
+function data_bg_checkbox_Callback(hObject, eventdata, handles)
+% hObject    handle to data_bg_checkbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of data_bg_checkbox
+
+global data_empupil
+
+if get(handles.data_bg_checkbox,'Value')==1
+    data_empupil.setup.is_bg = 1;
+    set(handles.data_show_bg_pushbutton,'Enable','on');
+else
+    data_empupil.setup.is_bg = 0;
+    set(handles.data_show_bg_pushbutton,'Enable','off');
+end
+
+
+% --- Executes on button press in data_show_bg_pushbutton.
+function data_show_bg_pushbutton_Callback(hObject, eventdata, handles)
+% hObject    handle to data_show_bg_pushbutton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+global data_empupil
+
+if isfield(data_empupil,'bg_img_1') && isfield(data_empupil,'bg_img_2')
+    
+    disp('Show background in two planes...')
+    figure; imshow(median(data_empupil.bg_img_1,3),[]);
+    axis tight
+    title('Background in plane 1');
+    
+    figure; imshow(median(data_empupil.bg_img_2,3),[]);
+    axis tight
+    title('Background in plane 2');
+else
+    msgbox('Please import the data!');
 end

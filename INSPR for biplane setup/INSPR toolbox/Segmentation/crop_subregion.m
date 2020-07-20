@@ -6,7 +6,7 @@
 %                                   West Lafayette, Indiana
 %                                   USA
 %
-%     Author: Fan Xu, August 2019
+%     Author: Fan Xu, July 2020
 %
 %% Script for segmentation from single molecule dataset
 %  input: qd1 and qd2
@@ -16,24 +16,26 @@
 function [subregion_ch1,subregion_ch2,seg_display] = crop_subregion(qd1,qd2,tform,boxsz,thresh,thresh_dist,setup)
 
 
-if setup.is_sCMOS   %sCMOS case 
-    % sCMOS parameters
-    offsetim_ch1 = repmat(setup.sCMOS_input.ccdoffset_ch1,[1 1 size(qd1,3)]);
-    offsetim_ch2 = repmat(setup.sCMOS_input.ccdoffset_ch2,[1 1 size(qd2,3)]);
-    
-    gainim_ch1 = repmat(setup.sCMOS_input.gain_ch1,[1 1 size(qd1,3)]);
-    gainim_ch2 = repmat(setup.sCMOS_input.gain_ch2,[1 1 size(qd2,3)]);
-   
-    qd1_in = (qd1 - offsetim_ch1) ./ gainim_ch1;
-    qd2_in = (qd2 - offsetim_ch2) ./ gainim_ch2;
-else    %EMCCD case
-    qd1_in = (qd1 - setup.offset) /setup.gain;
-    qd2_in = (qd2 - setup.offset) /setup.gain;
-end
+% if setup.is_sCMOS   %sCMOS case 
+%     % sCMOS parameters
+%     offsetim_ch1 = repmat(setup.sCMOS_input.ccdoffset_ch1,[1 1 size(qd1,3)]);
+%     offsetim_ch2 = repmat(setup.sCMOS_input.ccdoffset_ch2,[1 1 size(qd2,3)]);
+%     
+%     gainim_ch1 = repmat(setup.sCMOS_input.gain_ch1,[1 1 size(qd1,3)]);
+%     gainim_ch2 = repmat(setup.sCMOS_input.gain_ch2,[1 1 size(qd2,3)]);
+%    
+%     qd1_in = (qd1 - offsetim_ch1) ./ gainim_ch1;
+%     qd2_in = (qd2 - offsetim_ch2) ./ gainim_ch2;
+% else    %EMCCD case
+%     qd1_in = (qd1 - setup.offset) /setup.gain;
+%     qd2_in = (qd2 - setup.offset) /setup.gain;
+% end
+% 
+% qd1_in(qd1_in<=0) = 1e-6;
+% qd2_in(qd2_in<=0) = 1e-6;
 
-qd1_in(qd1_in<=0) = 1e-6;
-qd2_in(qd2_in<=0) = 1e-6;
-
+qd1_in = qd1;
+qd2_in = qd2;
 
 %transfer qd2 to find center peak
 qd2_trans = imwarp(qd2_in,tform,'cubic','OutputView',imref2d(size(qd2_in)));
