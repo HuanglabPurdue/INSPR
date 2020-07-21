@@ -169,10 +169,8 @@ Please cite INSPR in your publications if it helps your research:
 
 # Updated versions
 
-``` INSPR versions
-INSPR 1.1: Add background subtraction using temporal median filter. Note: INSPR supports the background subtraction option in cases with high background. During background subtraction, the statistical properties of the raw detected camera counts will be no longer maintained, it may decrease localization precisions.
-
-```
+**INSPR 1.1**: Add background subtraction using temporal median filter. 
+* Note: INSPR supports the background subtraction option in cases with high background. During background subtraction, the statistical properties of the raw detected camera counts will be no longer maintained, it may decrease localization precisions.
 
 
 
