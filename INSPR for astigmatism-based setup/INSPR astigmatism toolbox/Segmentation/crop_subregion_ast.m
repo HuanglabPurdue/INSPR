@@ -6,7 +6,7 @@
 %                                   West Lafayette, Indiana
 %                                   USA
 %
-%     Author: Fan Xu, December 2019
+%     Author: Fan Xu, July 2020
 %
 %% Script for segmentation from single molecule dataset
 %  input: ims
@@ -15,17 +15,17 @@
 %%
 function [subregion_ch1,seg_display] = crop_subregion_ast(data1,boxsz,thresh,thresh_dist,setup)
 
-if setup.is_sCMOS   %sCMOS case 
-    % sCMOS parameters
-    offsetim_ch1 = repmat(setup.sCMOS_input.ccdoffset_ch1,[1 1 size(data1,3)]);    
-    gainim_ch1 = repmat(setup.sCMOS_input.gain_ch1,[1 1 size(data1,3)]);   
-    data1_in = (data1 - offsetim_ch1) ./ gainim_ch1;
-else    %EMCCD case
-    data1_in = (data1 - setup.offset) /setup.gain;
-end
-
-data1_in(data1_in<=0) = 1e-6;
-
+% if setup.is_sCMOS   %sCMOS case 
+%     % sCMOS parameters
+%     offsetim_ch1 = repmat(setup.sCMOS_input.ccdoffset_ch1,[1 1 size(data1,3)]);    
+%     gainim_ch1 = repmat(setup.sCMOS_input.gain_ch1,[1 1 size(data1,3)]);   
+%     data1_in = (data1 - offsetim_ch1) ./ gainim_ch1;
+% else    %EMCCD case
+%     data1_in = (data1 - setup.offset) /setup.gain;
+% end
+% 
+% data1_in(data1_in<=0) = 1e-6;
+data1_in = data1;
 
 imsz_original = size(data1_in);
 if setup.is_imgsz == 1

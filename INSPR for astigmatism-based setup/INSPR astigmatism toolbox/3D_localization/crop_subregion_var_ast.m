@@ -6,7 +6,7 @@
 %                                   West Lafayette, Indiana
 %                                   USA
 %
-%     Author: Fan Xu, October 2019
+%     Author: Fan Xu, July 2020
 %
 %% Script for segmentation from single molecule dataset
 %  input: ims
@@ -27,6 +27,19 @@ else    %EMCCD case
 end
 
 data1_in(data1_in<=0) = 1e-6;
+
+
+% background subtraction      
+if setup.is_bg == 1
+    filter_n = 101;
+    bg_img = medfilt1(data1_in,filter_n,[],3);
+    
+    subtract_img = data1_in - bg_img;
+    subtract_img(subtract_img<=0) = 1e-6;
+    
+    data1_in = subtract_img;
+end
+
 
 imsz_original = size(data1_in);
 rangemin=[5, 5];

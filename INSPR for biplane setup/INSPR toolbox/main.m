@@ -1,14 +1,15 @@
 %%
 % Main script for running INSPR
 %
-% (C) Copyright 2019                The Huang Lab
+% (C) Copyright 2020                The Huang Lab
 %
 %     All rights reserved           Weldon School of Biomedical Engineering
 %                                   Purdue University
 %                                   West Lafayette, Indiana
 %                                   USA
 %
-%     Author: Fan Xu, December 2019
+%     Author: Fan Xu, July 2020
+% INSPR 1.1: Add background subtraction using temporal median filter
 %
 %% set environment paths
 

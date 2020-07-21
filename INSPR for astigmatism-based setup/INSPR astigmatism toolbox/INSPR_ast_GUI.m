@@ -9,7 +9,7 @@ function varargout = INSPR_ast_GUI(varargin)
 %                                   West Lafayette, Indiana
 %                                   USA
 %
-%     Author: Fan Xu, December 2019
+%     Author: Fan Xu, July 2020
 %
 
 gui_Singleton = 1;
@@ -67,6 +67,7 @@ data_empupil.setup.gain = 2.0;
 data_empupil.setup.is_sCMOS = 0;    %0 for EMCCD camera; 1 for sCMOS camera
 data_empupil.setup.sCMOS_input = []; 
 data_empupil.setup.is_imgsz = 1;    % 0 for image size smaller than 100 x 100 pixels
+data_empupil.setup.is_bg = 0;       %default is no background subtraction
 
 
 % pupil parameters
@@ -90,7 +91,7 @@ data_empupil.recon.isSeg = 1;
 data_empupil.recon.isRej = 1;
 data_empupil.recon.isDC = 1;
 data_empupil.recon.isGPU = 0;   %default is CPU version
-
+data_empupil.recon.is_bg = 0;   %default is no background subtraction
 
 data_empupil.recon.seg_thresh_low = 25; %segmentation threshold
 data_empupil.recon.seg_thresh_high = 40;
@@ -193,7 +194,18 @@ else
            set(handles.display_show_pushbutton,'Enable','off');
            set(handles.display_export_pushbutton,'Enable','off');
        end
-       data_empupil.ims = ims(:,:,:);
+       
+       if data_empupil.setup.is_sCMOS   %sCMOS case
+           % sCMOS parameters
+           offsetim_ch1 = repmat(data_empupil.setup.sCMOS_input.ccdoffset_ch1,[1 1 size(ims,3)]);
+           gainim_ch1 = repmat(data_empupil.setup.sCMOS_input.gain_ch1,[1 1 size(ims,3)]);
+           ims_in = (ims - offsetim_ch1) ./ gainim_ch1;
+       else    %EMCCD case
+           ims_in = (ims - data_empupil.setup.offset) /data_empupil.setup.gain;
+       end  
+       ims_in(ims_in<=0) = 1e-6;
+
+%        data_empupil.ims = ims(:,:,:);
        data_empupil.display.imagesz = size(ims,1);
        
        if (size(ims,1) > 100)
@@ -201,9 +213,27 @@ else
        else
            data_empupil.setup.is_imgsz = 0;
        end
-       msgbox('Finish importing data!');            
+       
+        
+       if data_empupil.setup.is_bg == 1
+           filter_n = 101;
+           bg_img = medfilt1(ims_in,filter_n,[],3);           
+           data_empupil.bg_img = bg_img;
+           
+           subtract_img = ims_in - bg_img;
+           subtract_img(subtract_img<=0) = 1e-6;
+           
+           data_empupil.ims = subtract_img;           
+           msgbox('Finish subtracting background and importing data!');
+       else
+           data_empupil.ims = ims_in;           
+           msgbox('Finish importing data!');
+       end
    end
 end
+
+
+
 
 
 function data_import_edit_Callback(hObject, eventdata, handles)
@@ -1395,6 +1425,12 @@ if data_empupil.recon.isGPU
     end  
 end
 
+if data_empupil.recon.is_bg == 1    % whether subtract background
+    data_empupil.setup.is_bg = 1; 
+else
+    data_empupil.setup.is_bg = 0;
+end
+
 %SMLM pupil fitting
 srobj = analysis3D_fromPupil_ast(data_empupil.recon,data_empupil.setup);
 
@@ -2103,4 +2139,59 @@ function display_import_edit_CreateFcn(hObject, eventdata, handles)
 %       See ISPC and COMPUTER.
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in recon_bg_checkbox.
+function recon_bg_checkbox_Callback(hObject, eventdata, handles)
+% hObject    handle to recon_bg_checkbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of recon_bg_checkbox
+
+global data_empupil
+
+if get(handles.recon_bg_checkbox,'Value')==1
+    data_empupil.recon.is_bg = 1;
+else
+    data_empupil.recon.is_bg = 0;
+end
+
+
+% --- Executes on button press in data_bg_checkbox.
+function data_bg_checkbox_Callback(hObject, eventdata, handles)
+% hObject    handle to data_bg_checkbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of data_bg_checkbox
+
+global data_empupil
+
+if get(handles.data_bg_checkbox,'Value')==1
+    data_empupil.setup.is_bg = 1;
+    set(handles.data_show_bg_pushbutton,'Enable','on');
+else
+    data_empupil.setup.is_bg = 0;
+    set(handles.data_show_bg_pushbutton,'Enable','off');
+end
+
+
+% --- Executes on button press in data_show_bg_pushbutton.
+function data_show_bg_pushbutton_Callback(hObject, eventdata, handles)
+% hObject    handle to data_show_bg_pushbutton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global data_empupil
+
+if isfield(data_empupil,'bg_img') 
+    
+    disp('Show background ...')
+    figure; imshow(median(data_empupil.bg_img,3),[]);
+    axis tight
+    title('Background image');
+    
+else
+    msgbox('Please import the data!');
 end

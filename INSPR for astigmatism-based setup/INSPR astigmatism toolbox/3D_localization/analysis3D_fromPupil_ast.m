@@ -6,7 +6,7 @@
 %                                   West Lafayette, Indiana
 %                                   USA
 %
-%     Author: Fan Xu, Oct 2019
+%     Author: Fan Xu, July 2020
 %       
 %%
 function srobj = analysis3D_fromPupil_ast(recon, setup_para)
@@ -114,6 +114,10 @@ if recon.isRej == 1
     zmask= sobj.loc_z > recon.rej.zmask_high | sobj.loc_z < recon.rej.zmask_low;
     
     totmask=llmask | intmask | uncermask  | zmask;
+    
+    if recon.is_bg == 1
+        totmask= uncermask  | zmask;
+    end
     
     loc_x_keep = sobj.loc_x(~totmask);
     loc_y_keep = sobj.loc_y(~totmask);
