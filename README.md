@@ -1,5 +1,5 @@
 # INSPR (*in situ* PSF retrieval)
-*In situ* point spread function retrieval (INSPR) toolbox is distributed as accompanying software for manuscript: Fan Xu, Donghan Ma, Kathryn P. MacPherson, Sheng Liu, Ye Bu, Yu Wang, Yu Tang, Cheng Bi, Tim Kwok, Alexander A. Chubykin, Peng Yin, Sarah Calve, Gary E. Landreth, and Fang Huang, "Three dimensional nanoscopy of whole cells and tissues with in situ point spread function retrieval" (2020) **Nature Methods**, accept.
+*In situ* point spread function retrieval (INSPR) toolbox is distributed as accompanying software for manuscript: Fan Xu, Donghan Ma, Kathryn P. MacPherson, Sheng Liu, Ye Bu, Yu Wang, Yu Tang, Cheng Bi, Tim Kwok, Alexander A. Chubykin, Peng Yin, Sarah Calve, Gary E. Landreth, and Fang Huang, "Three-dimensional nanoscopy of whole cells and tissues with in situ point spread function retrieval" (2020) **Nature Methods**, 17(5): 531-540, https://www.nature.com/articles/s41592-020-0816-x
 
 INSPR toolbox is developed for both biplane and astigmatism-based setups. It constructs an *in situ* 3D point spread function (PSF) directly from the obtained single molecule dataset and features an easy-to-use user interface including all steps of 3D single molecule localization from INSPR model generation, pupil-based 3D localization (supporting both GPU with cubic spline implementation and CPU versions), drift correction, volume alignment, to super-resolution image reconstruction. It also contains a small single molecule dataset for users to run as an example.
 
@@ -149,6 +149,31 @@ Note: The target of INSPR is to deal with whole cell and tissue specimens. If th
 Mex functions include pupil-based 3D localization for both biplane and astigmatism-based setup (running on GPU with cubic spline implementation). 
 
 The detail codes are in 'Mex function for 3D localization' folder.
+
+# Citation
+
+Please cite INSPR in your publications if it helps your research:
+
+``` Citation
+@article{xu2020three,
+  title={Three-dimensional nanoscopy of whole cells and tissues with in situ point spread function retrieval},
+  author={Xu, Fan and Ma, Donghan and MacPherson, Kathryn P and Liu, Sheng and Bu, Ye and Wang, Yu and Tang, Yu and Bi, Cheng and Kwok, Tim and Chubykin, Alexander A and others},
+  journal={Nature Methods},
+  volume={17},
+  number={5},
+  pages={531--540},
+  year={2020},
+  publisher={Nature Publishing Group}
+}
+```
+
+# Updated versions
+
+``` INSPR versions
+INSPR 1.1: Add background subtraction using temporal median filter. Note: INSPR supports the background subtraction option in cases with high background. During background subtraction, the statistical properties of the raw detected camera counts will be no longer maintained, it may decrease localization precisions.
+
+```
+
 
 
 # Acknowledgements
