@@ -92,6 +92,7 @@ data_empupil.recon.isRej = 1;
 data_empupil.recon.isDC = 1;
 data_empupil.recon.isGPU = 0;   %default is CPU version
 data_empupil.recon.is_bg = 0;   %default is no background subtraction
+data_empupil.recon.is_2D = 0;   %default is not selected
 
 data_empupil.recon.seg_thresh_low = 25; %segmentation threshold
 data_empupil.recon.seg_thresh_high = 40;
@@ -1369,6 +1370,7 @@ function recon_process_pushbutton_Callback(hObject, eventdata, handles)
 % hObject    handle to recon_process_pushbutton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+addpath('.\2D_localization\');
 addpath('.\3D_localization\');
 
 global data_empupil
@@ -1392,18 +1394,19 @@ else
     end
 end
 
-
-if data_empupil.recon.isNewpupil == 0
-    if ~isfield(data_empupil,'probj')
-        msgbox('Please import pupil model!');
-        return;
-    end
-    data_empupil.recon.probj_all{1} = data_empupil.probj;
-    data_empupil.recon.loopn = 1;
-else
-    if ~isfield(data_empupil.recon,'probj_all')
-        msgbox('Please import the pupil model!');
-        return;
+if data_empupil.recon.is_2D == 0 
+    if data_empupil.recon.isNewpupil == 0
+        if ~isfield(data_empupil,'probj')
+            msgbox('Please import pupil model!');
+            return;
+        end
+        data_empupil.recon.probj_all{1} = data_empupil.probj;
+        data_empupil.recon.loopn = 1;
+    else
+        if ~isfield(data_empupil.recon,'probj_all')
+            msgbox('Please import the pupil model!');
+            return;
+        end
     end
 end
 
@@ -1432,7 +1435,17 @@ else
 end
 
 %SMLM pupil fitting
-srobj = analysis3D_fromPupil_ast(data_empupil.recon,data_empupil.setup);
+if data_empupil.recon.is_2D == 1
+    if data_empupil.recon.isGPU
+        srobj = analysis2D_fromGaussian(data_empupil.recon,data_empupil.setup); 
+    else
+        % message to GUI
+        msgbox('Current 2D localization only supports GPU version, please select <Run GPU> checkbox!');
+        return;
+    end
+else
+    srobj = analysis3D_fromPupil_ast(data_empupil.recon,data_empupil.setup);
+end
 
 if recon_stop == 1
     msgbox('Stop by user control!');
@@ -1512,49 +1525,82 @@ if ~isfield(data_empupil,'srobj')
     return;
 end
 
-display('Show 3D reconstrcted Z-color image...');
-
 obj = data_empupil.srobj;
 sz = data_empupil.display.imagesz;
-obj.zm = data_empupil.display.zm;
-obj.Recon_color_highb = data_empupil.display.Recon_color_highb;
-segnum = 64;
-flagstr = [];
-if isempty(obj.loc_x_f)||isempty(obj.loc_y_f)||isempty(obj.loc_z_f)
-    warning('loc_x(y or z)_f property is empty, reconstructing from raw localization data');
-    reconx=obj.loc_x;
-    recony=obj.loc_y;
-    reconz=obj.loc_z;
-    flagstr='raw';
-else
-    reconx=obj.loc_x_f(:)./obj.Cam_pixelsz;
-    recony=obj.loc_y_f(:)./obj.Cam_pixelsz;
-    reconz=obj.loc_z_f(:);
-    flagstr='dc';
+zm = data_empupil.display.zm;
+Recon_color_highb = data_empupil.display.Recon_color_highb;
+
+if data_empupil.recon.is_2D == 1
+    display('Show 2D reconstrcted image...');
+
+    flagstr=[];
+    if isempty(obj.loc_x_f)||isempty(obj.loc_y_f)
+        warning('loc_x(y)_f property is empty, reconstructing from raw localization data');
+        reconx=obj.loc_x;
+        recony=obj.loc_y;
+        flagstr='raw';
+    else
+        reconx=obj.loc_x_f./obj.Cam_pixelsz;
+        recony=obj.loc_y_f./obj.Cam_pixelsz;
+        flagstr='dc';
+    end
+    
+    if isempty(reconx)||isempty(recony)
+        error('Empty matrix detected. Reconstruction will not proceed.');
+    end
+    
+    srim = SRreconstructhist(sz,zm,reconx,recony,0);
+    smoothim = double(gaussf(srim,[1.5 1.5]));
+    imstr = imstretch_linear(smoothim,0,Recon_color_highb,0,255);
+    colorim = uint8(imstr);
+
+    figure; imshow(colorim,hot(256));
+    axis tight
+    
+    data_empupil.display.colorim = colorim;
+    % save backup
+    imwrite(colorim,hot(256),fullfile(data_empupil.setup.workspace,['SR_2D_' flagstr '_backup.tif']));
+    
+else 
+    display('Show 3D reconstrcted Z-color image...');
+    
+    segnum = 64;
+    flagstr = [];
+    if isempty(obj.loc_x_f)||isempty(obj.loc_y_f)||isempty(obj.loc_z_f)
+        warning('loc_x(y or z)_f property is empty, reconstructing from raw localization data');
+        reconx=obj.loc_x;
+        recony=obj.loc_y;
+        reconz=obj.loc_z;
+        flagstr='raw';
+    else
+        reconx=obj.loc_x_f(:)./obj.Cam_pixelsz;
+        recony=obj.loc_y_f(:)./obj.Cam_pixelsz;
+        reconz=obj.loc_z_f(:);
+        flagstr='dc';
+    end
+    
+    if isempty(reconx)||isempty(recony)||isempty(reconz)
+        error('Empty matrix detected. Reconstruction will not proceed.');
+    end
+    
+    [rch,gch,bch]=srhist_color(sz,zm,reconx,recony,reconz,segnum);
+    % save colored reconstruction
+    rchsm = imgaussfilt(rch,1);
+    gchsm = imgaussfilt(gch,1);
+    bchsm = imgaussfilt(bch,1);
+    rchsmst=imstretch_linear(rchsm,0,Recon_color_highb,0,255);
+    gchsmst=imstretch_linear(gchsm,0,Recon_color_highb,0,255);
+    bchsmst=imstretch_linear(bchsm,0,Recon_color_highb,0,255);
+    colorim = cat(3,rchsmst,gchsmst,bchsmst);
+    colorim = uint8(colorim);
+    
+    figure; imshow(colorim,[]);
+    axis tight
+    
+    data_empupil.display.colorim = colorim;
+    % save backup
+    imwrite(colorim,fullfile(data_empupil.setup.workspace,['SR_3D_Zcol_' flagstr '_backup.tif']));
 end
-
-if isempty(reconx)||isempty(recony)||isempty(reconz)
-    error('Empty matrix detected. Reconstruction will not proceed.');
-end
-
-[rch,gch,bch]=srhist_color(sz,obj.zm,reconx,recony,reconz,segnum);
-% save colored reconstruction
-rchsm = imgaussfilt(rch,1);
-gchsm = imgaussfilt(gch,1);
-bchsm = imgaussfilt(bch,1);
-rchsmst=imstretch_linear(rchsm,0,obj.Recon_color_highb,0,255);
-gchsmst=imstretch_linear(gchsm,0,obj.Recon_color_highb,0,255);
-bchsmst=imstretch_linear(bchsm,0,obj.Recon_color_highb,0,255);
-colorim = cat(3,rchsmst,gchsmst,bchsmst);
-colorim = uint8(colorim);
-
-figure; imshow(colorim,[]);
-axis tight
-
-data_empupil.display.colorim = colorim;
-% save backup
-imwrite(colorim,fullfile(data_empupil.setup.workspace,['SR_Zcol_' flagstr '_backup.tif']));
-
 
 %enable export button
 set(handles.display_export_pushbutton,'Enable','on');
@@ -2194,4 +2240,29 @@ if isfield(data_empupil,'bg_img')
     
 else
     msgbox('Please import the data!');
+end
+
+
+% --- Executes on button press in recon_2D_checkbox.
+function recon_2D_checkbox_Callback(hObject, eventdata, handles)
+% hObject    handle to recon_2D_checkbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of recon_2D_checkbox
+
+global data_empupil
+
+if get(handles.recon_2D_checkbox,'Value')==1
+    data_empupil.recon.is_2D = 1;
+    set(handles.recon_pupil_checkbox,'Value',0);
+    set(handles.recon_pupil_checkbox,'Enable','off');
+    set(handles.recon_import_pupil_pushbutton,'Enable','off');
+    set(handles.recon_dc_checkbox,'Value',0);
+    set(handles.recon_dc_checkbox,'Enable','off');
+    set(handles.recon_dc_change_pushbutton,'Enable','off');
+else
+    data_empupil.recon.is_2D = 0;
+    set(handles.recon_pupil_checkbox,'Enable','on');
+    set(handles.recon_dc_checkbox,'Enable','on');
 end
