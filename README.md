@@ -112,7 +112,7 @@ Note: The target of INSPR is to deal with whole cell and tissue specimens. If th
 * genPupilfigs.m: Script for generating figures of retrieved pupil
 * export2csv.m: Script for exporting to ‘csv’ format
 * srhist_color.m: Script for generating color-coded super-resolution image
-
+* SRreconstructhist.m: Script for generating 2D super-resolution image
 
 **‘Segmentation’ folder**
 * crop_subregion_ast.m: Script for segmentation
@@ -127,6 +127,11 @@ Note: The target of INSPR is to deal with whole cell and tissue specimens. If th
 * cc2.m: Script for calculating 2D cross correlation
 * PRPSF_aber_fromAveZ_ast.m: Script for estimating pupil
 * subregion_normalization.m: Script for normalizing sub-regions
+
+**‘2D localization’ folder**
+* analysis2D_fromGaussian.m: Script for 2D reconstruction
+* loc_gaussian_2D.m: Script for 2D Gaussian fitting
+* SRsCMOS_MLE.mexw64: Mex function for 2D localization
 
 
 **‘3D localization’ folder**
