@@ -69,7 +69,7 @@ for nn = 1:recon.dirN
     disp('Image segmentation');
     boxsz = 16;
     thresh = [recon.seg_thresh_low,recon.seg_thresh_high];      
-    [subregion_ch1,subregion_ch2,subvar_ch1,subvar_ch2,frame_num,l,t,offset_seg] = crop_subregion_without_transData(qd1,qd2,tform,boxsz,thresh,setup_para);
+    [subregion_ch1,subregion_ch2,subvar_ch1,subvar_ch2,frame_num,l,t,offset_seg] = crop_subregion_without_transData(qd1,qd2,tform,boxsz,thresh,setup_para,recon);
 
     
     %localzation

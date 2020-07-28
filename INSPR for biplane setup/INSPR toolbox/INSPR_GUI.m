@@ -1681,11 +1681,11 @@ if data_empupil.recon.isGPU
     end  
 end
 
-if data_empupil.recon.is_bg == 1    % whether subtract background
-    data_empupil.setup.is_bg = 1; 
-else
-    data_empupil.setup.is_bg = 0;
-end
+% if data_empupil.recon.is_bg == 1    % whether subtract background
+%     data_empupil.setup.is_bg = 1; 
+% else
+%     data_empupil.setup.is_bg = 0;
+% end
     
 %SMLM pupil fitting
 srobj = analysis3D_fromPupil(data_empupil.recon, data_empupil.tform, data_empupil.setup);

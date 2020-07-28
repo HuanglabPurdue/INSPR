@@ -11,6 +11,7 @@
 %
 %     Author: Fan Xu, July 2020
 % INSPR 1.1: Add background subtraction using temporal median filter
+% INSPR 1.2: Add 2D Gaussian fitting option for 2D localization
 %
 
 %% set environment paths
