@@ -65,7 +65,7 @@ for nn = 1:recon.dirN
     disp('Image segmentation');
     boxsz = 16;
     thresh = [recon.seg_thresh_low,recon.seg_thresh_high];      
-    [subregion_ch1,subvar_ch1,frame_num,l,t] = crop_subregion_var_ast(ims,boxsz,thresh,setup_para);
+    [subregion_ch1,subvar_ch1,frame_num,l,t] = crop_subregion_var_ast(ims,boxsz,thresh,setup_para,recon);
         
     %localzation
     drawnow

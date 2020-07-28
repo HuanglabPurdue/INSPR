@@ -1428,11 +1428,11 @@ if data_empupil.recon.isGPU
     end  
 end
 
-if data_empupil.recon.is_bg == 1    % whether subtract background
-    data_empupil.setup.is_bg = 1; 
-else
-    data_empupil.setup.is_bg = 0;
-end
+% if data_empupil.recon.is_bg == 1    % whether subtract background
+%     data_empupil.setup.is_bg = 1; 
+% else
+%     data_empupil.setup.is_bg = 0;
+% end
 
 %SMLM pupil fitting
 if data_empupil.recon.is_2D == 1

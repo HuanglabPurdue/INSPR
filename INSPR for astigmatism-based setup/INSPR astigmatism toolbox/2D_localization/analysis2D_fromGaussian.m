@@ -65,7 +65,7 @@ for nn = 1:recon.dirN
     boxsz = 7;  % small subregion for 2D case
 %     thresh = [recon.seg_thresh_low,recon.seg_thresh_high];  
     thresh = [recon.seg_thresh_low,recon.seg_thresh_low];      
-    [subregion_ch1,subvar_ch1,frame_num,l,t] = crop_subregion_var_ast(ims,boxsz,thresh,setup_para);
+    [subregion_ch1,subvar_ch1,frame_num,l,t] = crop_subregion_var_ast(ims,boxsz,thresh,setup_para,recon);
         
     %localzation
     drawnow
