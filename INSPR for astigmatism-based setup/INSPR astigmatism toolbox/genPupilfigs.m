@@ -1,11 +1,11 @@
-% (C) Copyright 2019                The Huang Lab
+% (C) Copyright 2020                The Huang Lab
 %
 %     All rights reserved           Weldon School of Biomedical Engineering
 %                                   Purdue University
 %                                   West Lafayette, Indiana
 %                                   USA
 %
-%     Author: Fan Xu, October 2019
+%     Author: Fan Xu, August 2020
 %
 function genPupilfigs(obj,ImgType,datapath)
 % genPuilfigs - generate figures of phase retrieval result, including various PSFs, pupil 
@@ -19,24 +19,50 @@ switch ImgType
         z = obj.Zpos;
         zind=[obj.Zindstart:obj.Zindstep:obj.Zindend];
         RC=64;
-        L=length(zind);
+        L=length(zind);      
+        
+        Mpsf=obj.Mpsf_extend(RC+1-RC/4:RC+1+RC/4,RC+1-RC/4:RC+1+RC/4,:);
         Modpsf=obj.PSFstruct.Modpsf(RC+1-RC/4:RC+1+RC/4,RC+1-RC/4:RC+1+RC/4,:);
-        h1=[];
-      
-        figure('Color',[1,1,1],'Name','phase retrieved PSFs at sampled z positions','Resize','on','Units','normalized','Position',[0.3,0.3,0.43,0.1])
-
+        h1=[];h2=[];
+        figure('Color',[1,1,1],'Name',' Reassembled and INSPR PSFs at sampled z positions','Resize','on','Units','normalized','Position',[0.3,0.3,0.72,0.36])
         for ii=1:L
-            h1(ii)=subplot('position',[(ii-1)/(L+1),0.1,1/(L+1),0.8]);      %0.75
-            image(double(squeeze(Modpsf(:,:,zind(ii)))),'CDataMapping','scaled','Parent',h1(ii))
+            h1(ii)=subplot('position',[(ii-1)/(L+1),0.5,1/(L+1),1/2]);
+            image(double(squeeze(Mpsf(:,:,zind(ii)))),'CDataMapping','scaled','Parent',h1(ii))
             text(3,3,[num2str(z(zind(ii)),3),'\mum'],'color',[1,1,1]);
-
-        end
-        h1(ii+1)=subplot('position',[L/(L+1),0.1,1/(L+1),0.8]); %0.75
-        image(double(permute(squeeze(Modpsf(17-10:17+10,17,:)),[2,1])),'CDataMapping','scaled','Parent',h1(ii+1))
+            if ii==1
+                text(3,28,['Assigned PSF'],'color',[1,1,1]);
+            end
+            
+            h2(ii)=subplot('position',[(ii-1)/(L+1),0,1/(L+1),1/2]);
+            image(double(squeeze(Modpsf(:,:,zind(ii)))),'CDataMapping','scaled','Parent',h2(ii))
+            if ii==1
+                text(3,28,['INSPR PSF'],'color',[1,1,1]);
+            end
+            
+        end                 
+        h1(ii+1)=subplot('position',[L/(L+1),0.5,1/(L+1),1/2]); 
+        image(double(permute(squeeze(Mpsf(17-10:17+10,17,:)),[2,1])),'CDataMapping','scaled','Parent',h1(ii+1))
         text(3,3,['x-z'],'color',[1,1,1]);
+        h2(ii+1)=subplot('position',[L/(L+1),0,1/(L+1),1/2]);
+        image(double(permute(squeeze(Modpsf(17-10:17+10,17,:)),[2,1])),'CDataMapping','scaled','Parent',h2(ii+1))
         colormap(jet)
-        axis(h1,'equal')
-        axis(h1,'off')
+        axis([h1,h2],'equal')
+        axis([h1,h2],'off')
+        
+%         figure('Color',[1,1,1],'Name','phase retrieved PSFs at sampled z positions','Resize','on','Units','normalized','Position',[0.3,0.3,0.43,0.1])
+% 
+%         for ii=1:L
+%             h1(ii)=subplot('position',[(ii-1)/(L+1),0.1,1/(L+1),0.8]);      %0.75
+%             image(double(squeeze(Modpsf(:,:,zind(ii)))),'CDataMapping','scaled','Parent',h1(ii))
+%             text(3,3,[num2str(z(zind(ii)),3),'\mum'],'color',[1,1,1]);
+% 
+%         end
+%         h1(ii+1)=subplot('position',[L/(L+1),0.1,1/(L+1),0.8]); %0.75
+%         image(double(permute(squeeze(Modpsf(17-10:17+10,17,:)),[2,1])),'CDataMapping','scaled','Parent',h1(ii+1))
+%         text(3,3,['x-z'],'color',[1,1,1]);
+%         colormap(jet)
+%         axis(h1,'equal')
+%         axis(h1,'off')
 
   
         saveas(gca,fullfile(datapath,'phase retrieved PSFs.tif'));   %edited by Fan Xu

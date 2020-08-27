@@ -1861,6 +1861,7 @@ set(handles.pupil_export_pushbutton,'Enable','on');
 set(handles.pupil_showPSFs_pushbutton,'Enable','on');
 set(handles.pupil_show_pupil_pushbutton,'Enable','on');
 set(handles.pupil_show_zernike_pushbutton,'Enable','on');
+set(handles.pupil_showPSFs_fixed_pushbutton,'Enable','on');
 
 
 
@@ -1890,7 +1891,7 @@ function pupil_showPSFs_pushbutton_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 global data_empupil
 
-disp('Show the Reassembled and EMpupil PSFs ...')
+disp('Show the Reassembled and INSPR PSFs ...')
 % data_empupil.probj.genPRfigs('PSF');
 genPupilfigs(data_empupil.probj, 'PSF',data_empupil.setup.workspace);
 
@@ -2266,3 +2267,59 @@ else
     set(handles.recon_pupil_checkbox,'Enable','on');
     set(handles.recon_dc_checkbox,'Enable','on');
 end
+
+
+% --- Executes on button press in pupil_showPSFs_fixed_pushbutton.
+function pupil_showPSFs_fixed_pushbutton_Callback(hObject, eventdata, handles)
+% hObject    handle to pupil_showPSFs_fixed_pushbutton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+global data_empupil
+
+disp('Show INSPR PSFs at fixed axial positions')
+% genPupilfigs(data_empupil.probj, 'PSF',data_empupil.setup.workspace);
+
+% INSPR PSFs
+z = [-1:0.1:1];
+sz_z = size(z,2);
+zind=[1:2:sz_z];
+R = 128;
+
+PRstruct_e = data_empupil.probj.PRstruct;
+psfobj_e = PSF_zernike(PRstruct_e);
+psfobj_e.Xpos = zeros(1,sz_z);
+psfobj_e.Ypos = zeros(1,sz_z);
+psfobj_e.Zpos = z;
+psfobj_e.Boxsize = R;
+psfobj_e.Pixelsize = data_empupil.setup.Pixelsize; % micron
+psfobj_e.PSFsize = R;
+psfobj_e.nMed = data_empupil.setup.nMed;
+
+% generate PSFs
+psfobj_e.precomputeParam();
+psfobj_e.setPupil();
+psfobj_e.genZernikeMag();
+psfobj_e.genPSF_2();
+psfobj_e.scalePSF('normal');
+
+% show generated PSF images
+INSPR_PSFs = psfobj_e.ScaledPSFs;
+
+RC=64;
+Modpsf = INSPR_PSFs(RC+1-RC/4:RC+1+RC/4,RC+1-RC/4:RC+1+RC/4,:);
+L = length(zind);
+h1 = [];
+figure('Color',[1,1,1],'Name','INSPR PSFs at fixed z positions','Resize','on','Units','normalized','Position',[0.3,0.3,0.43,0.1])
+for ii=1:L
+    h1(ii)=subplot('position',[(ii-1)/(L+1),0.1,1/(L+1),0.8]);      
+    image(double(squeeze(Modpsf(:,:,zind(ii)))),'CDataMapping','scaled','Parent',h1(ii))
+    text(3,3,[num2str(z(zind(ii)),3),'\mum'],'color',[1,1,1]);
+    
+end
+h1(ii+1)=subplot('position',[L/(L+1),0.1,1/(L+1),0.8]); 
+image(double(permute(squeeze(Modpsf(17-10:17+10,17,:)),[2,1])),'CDataMapping','scaled','Parent',h1(ii+1))
+text(3,3,['x-z'],'color',[1,1,1]);
+colormap(jet)
+axis(h1,'equal')
+axis(h1,'off')
