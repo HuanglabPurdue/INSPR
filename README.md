@@ -181,6 +181,7 @@ Please cite INSPR in your publications if it helps your research:
 * Note: Current 2D localization only provides GPU version. If the user chooses this option, please select ‘Run GPU’ checkbox.
 
 
+
 # Acknowledgements
 We would like to thank Karthigeyan Dhanasekaran and Patrick Lusk (Yale University) for sharing the labeling protocol of Nup98 and interpretation of the resolved Nup98 structures. We thank Michael J. Mlodzianoski for initial instrument design, Sha An for help in instrument alignment and sample preparation, and David A. Miller for providing labeling protocols of mitochondria and microtubules. F.X., D.M., S.L., C.B., and F.H. were supported by grants from the NIH (GM119785) and DARPA (D16AP00093). K.P.M. and G.E.L were supported by grants from the NIH (AG051495 and AG050597). Y.B. and S.C. were supported by a grant from the NIH (R01AR071359). Y.W. and P.Y. were supported by a grant from the NIH (1R01EB018659) and Harvard Medical School Dean’s Initiative Grant. 
 
