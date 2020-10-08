@@ -40,6 +40,9 @@ classdef SRscmos < handle
         zm = 10;
         Recon_color_highb=3;     
         
+        DC2D_errthresh=0.06;  % in um.
+        DC2D_fnum=1000;
+        DC2D_interval=20;
     end
    
     
@@ -132,7 +135,19 @@ classdef SRscmos < handle
                 error('No localization detected. Please check detection threshold!');
             end
         end
-        
+        function Perform_DriftCorrection2D(obj)
+            
+            [cormask] = gencormask(obj.loc_t,obj.DC2D_fnum);
+            %Drift correction using redundancy-based method
+            [dx1,dy1] = driftcorrection_Redun2D(obj.loc_x, obj.loc_y, obj.Cam_pixelsz, obj.DC2D_errthresh, cormask, obj.DC2D_interval);
+            %             figure;plot([dx1,dy1],'.-');
+            
+            obj.DriftCorrect_XYShift = [dx1,dy1];
+            
+            [obj.loc_x_f,obj.loc_y_f] = shiftcoords_all(obj.loc_x.*obj.Cam_pixelsz,obj.loc_y.*obj.Cam_pixelsz,[],cormask,[dx1,dy1]);
+            
+        end
+      
         
     end
 end

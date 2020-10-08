@@ -9,7 +9,7 @@ function varargout = INSPR_ast_GUI(varargin)
 %                                   West Lafayette, Indiana
 %                                   USA
 %
-%     Author: Fan Xu, December 2019
+%     Author: Fan Xu, July 2020
 %
 
 gui_Singleton = 1;
@@ -67,6 +67,7 @@ data_empupil.setup.gain = 2.0;
 data_empupil.setup.is_sCMOS = 0;    %0 for EMCCD camera; 1 for sCMOS camera
 data_empupil.setup.sCMOS_input = []; 
 data_empupil.setup.is_imgsz = 1;    % 0 for image size smaller than 100 x 100 pixels
+data_empupil.setup.is_bg = 0;       %default is no background subtraction
 
 
 % pupil parameters
@@ -90,7 +91,8 @@ data_empupil.recon.isSeg = 1;
 data_empupil.recon.isRej = 1;
 data_empupil.recon.isDC = 1;
 data_empupil.recon.isGPU = 0;   %default is CPU version
-
+data_empupil.recon.is_bg = 0;   %default is no background subtraction
+data_empupil.recon.is_2D = 0;   %default is not selected
 
 data_empupil.recon.seg_thresh_low = 25; %segmentation threshold
 data_empupil.recon.seg_thresh_high = 40;
@@ -193,7 +195,18 @@ else
            set(handles.display_show_pushbutton,'Enable','off');
            set(handles.display_export_pushbutton,'Enable','off');
        end
-       data_empupil.ims = ims(:,:,:);
+       
+       if data_empupil.setup.is_sCMOS   %sCMOS case
+           % sCMOS parameters
+           offsetim_ch1 = repmat(data_empupil.setup.sCMOS_input.ccdoffset_ch1,[1 1 size(ims,3)]);
+           gainim_ch1 = repmat(data_empupil.setup.sCMOS_input.gain_ch1,[1 1 size(ims,3)]);
+           ims_in = (ims - offsetim_ch1) ./ gainim_ch1;
+       else    %EMCCD case
+           ims_in = (ims - data_empupil.setup.offset) /data_empupil.setup.gain;
+       end  
+       ims_in(ims_in<=0) = 1e-6;
+
+%        data_empupil.ims = ims(:,:,:);
        data_empupil.display.imagesz = size(ims,1);
        
        if (size(ims,1) > 100)
@@ -201,9 +214,27 @@ else
        else
            data_empupil.setup.is_imgsz = 0;
        end
-       msgbox('Finish importing data!');            
+       
+        
+       if data_empupil.setup.is_bg == 1
+           filter_n = 101;
+           bg_img = medfilt1(ims_in,filter_n,[],3);           
+           data_empupil.bg_img = bg_img;
+           
+           subtract_img = ims_in - bg_img;
+           subtract_img(subtract_img<=0) = 1e-6;
+           
+           data_empupil.ims = subtract_img;           
+           msgbox('Finish subtracting background and importing data!');
+       else
+           data_empupil.ims = ims_in;           
+           msgbox('Finish importing data!');
+       end
    end
 end
+
+
+
 
 
 function data_import_edit_Callback(hObject, eventdata, handles)
@@ -1339,6 +1370,7 @@ function recon_process_pushbutton_Callback(hObject, eventdata, handles)
 % hObject    handle to recon_process_pushbutton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+addpath('.\2D_localization\');
 addpath('.\3D_localization\');
 
 global data_empupil
@@ -1362,18 +1394,19 @@ else
     end
 end
 
-
-if data_empupil.recon.isNewpupil == 0
-    if ~isfield(data_empupil,'probj')
-        msgbox('Please import pupil model!');
-        return;
-    end
-    data_empupil.recon.probj_all{1} = data_empupil.probj;
-    data_empupil.recon.loopn = 1;
-else
-    if ~isfield(data_empupil.recon,'probj_all')
-        msgbox('Please import the pupil model!');
-        return;
+if data_empupil.recon.is_2D == 0 
+    if data_empupil.recon.isNewpupil == 0
+        if ~isfield(data_empupil,'probj')
+            msgbox('Please import pupil model!');
+            return;
+        end
+        data_empupil.recon.probj_all{1} = data_empupil.probj;
+        data_empupil.recon.loopn = 1;
+    else
+        if ~isfield(data_empupil.recon,'probj_all')
+            msgbox('Please import the pupil model!');
+            return;
+        end
     end
 end
 
@@ -1395,8 +1428,24 @@ if data_empupil.recon.isGPU
     end  
 end
 
+% if data_empupil.recon.is_bg == 1    % whether subtract background
+%     data_empupil.setup.is_bg = 1; 
+% else
+%     data_empupil.setup.is_bg = 0;
+% end
+
 %SMLM pupil fitting
-srobj = analysis3D_fromPupil_ast(data_empupil.recon,data_empupil.setup);
+if data_empupil.recon.is_2D == 1
+    if data_empupil.recon.isGPU
+        srobj = analysis2D_fromGaussian(data_empupil.recon,data_empupil.setup); 
+    else
+        % message to GUI
+        msgbox('Current 2D localization only supports GPU version, please select <Run GPU> checkbox!');
+        return;
+    end
+else
+    srobj = analysis3D_fromPupil_ast(data_empupil.recon,data_empupil.setup);
+end
 
 if recon_stop == 1
     msgbox('Stop by user control!');
@@ -1476,49 +1525,82 @@ if ~isfield(data_empupil,'srobj')
     return;
 end
 
-display('Show 3D reconstrcted Z-color image...');
-
 obj = data_empupil.srobj;
 sz = data_empupil.display.imagesz;
-obj.zm = data_empupil.display.zm;
-obj.Recon_color_highb = data_empupil.display.Recon_color_highb;
-segnum = 64;
-flagstr = [];
-if isempty(obj.loc_x_f)||isempty(obj.loc_y_f)||isempty(obj.loc_z_f)
-    warning('loc_x(y or z)_f property is empty, reconstructing from raw localization data');
-    reconx=obj.loc_x;
-    recony=obj.loc_y;
-    reconz=obj.loc_z;
-    flagstr='raw';
-else
-    reconx=obj.loc_x_f(:)./obj.Cam_pixelsz;
-    recony=obj.loc_y_f(:)./obj.Cam_pixelsz;
-    reconz=obj.loc_z_f(:);
-    flagstr='dc';
+zm = data_empupil.display.zm;
+Recon_color_highb = data_empupil.display.Recon_color_highb;
+
+if data_empupil.recon.is_2D == 1
+    display('Show 2D reconstrcted image...');
+
+    flagstr=[];
+    if isempty(obj.loc_x_f)||isempty(obj.loc_y_f)
+        warning('loc_x(y)_f property is empty, reconstructing from raw localization data');
+        reconx=obj.loc_x;
+        recony=obj.loc_y;
+        flagstr='raw';
+    else
+        reconx=obj.loc_x_f./obj.Cam_pixelsz;
+        recony=obj.loc_y_f./obj.Cam_pixelsz;
+        flagstr='dc';
+    end
+    
+    if isempty(reconx)||isempty(recony)
+        error('Empty matrix detected. Reconstruction will not proceed.');
+    end
+    
+    srim = SRreconstructhist(sz,zm,reconx,recony,0);
+    smoothim = double(gaussf(srim,[1.5 1.5]));
+    imstr = imstretch_linear(smoothim,0,Recon_color_highb,0,255);
+    colorim = uint8(imstr);
+
+    figure; imshow(colorim,hot(256));
+    axis tight
+    
+    data_empupil.display.colorim = colorim;
+    % save backup
+    imwrite(colorim,hot(256),fullfile(data_empupil.setup.workspace,['SR_2D_' flagstr '_backup.tif']));
+    
+else 
+    display('Show 3D reconstrcted Z-color image...');
+    
+    segnum = 64;
+    flagstr = [];
+    if isempty(obj.loc_x_f)||isempty(obj.loc_y_f)||isempty(obj.loc_z_f)
+        warning('loc_x(y or z)_f property is empty, reconstructing from raw localization data');
+        reconx=obj.loc_x;
+        recony=obj.loc_y;
+        reconz=obj.loc_z;
+        flagstr='raw';
+    else
+        reconx=obj.loc_x_f(:)./obj.Cam_pixelsz;
+        recony=obj.loc_y_f(:)./obj.Cam_pixelsz;
+        reconz=obj.loc_z_f(:);
+        flagstr='dc';
+    end
+    
+    if isempty(reconx)||isempty(recony)||isempty(reconz)
+        error('Empty matrix detected. Reconstruction will not proceed.');
+    end
+    
+    [rch,gch,bch]=srhist_color(sz,zm,reconx,recony,reconz,segnum);
+    % save colored reconstruction
+    rchsm = imgaussfilt(rch,1);
+    gchsm = imgaussfilt(gch,1);
+    bchsm = imgaussfilt(bch,1);
+    rchsmst=imstretch_linear(rchsm,0,Recon_color_highb,0,255);
+    gchsmst=imstretch_linear(gchsm,0,Recon_color_highb,0,255);
+    bchsmst=imstretch_linear(bchsm,0,Recon_color_highb,0,255);
+    colorim = cat(3,rchsmst,gchsmst,bchsmst);
+    colorim = uint8(colorim);
+    
+    figure; imshow(colorim,[]);
+    axis tight
+    
+    data_empupil.display.colorim = colorim;
+    % save backup
+    imwrite(colorim,fullfile(data_empupil.setup.workspace,['SR_3D_Zcol_' flagstr '_backup.tif']));
 end
-
-if isempty(reconx)||isempty(recony)||isempty(reconz)
-    error('Empty matrix detected. Reconstruction will not proceed.');
-end
-
-[rch,gch,bch]=srhist_color(sz,obj.zm,reconx,recony,reconz,segnum);
-% save colored reconstruction
-rchsm = imgaussfilt(rch,1);
-gchsm = imgaussfilt(gch,1);
-bchsm = imgaussfilt(bch,1);
-rchsmst=imstretch_linear(rchsm,0,obj.Recon_color_highb,0,255);
-gchsmst=imstretch_linear(gchsm,0,obj.Recon_color_highb,0,255);
-bchsmst=imstretch_linear(bchsm,0,obj.Recon_color_highb,0,255);
-colorim = cat(3,rchsmst,gchsmst,bchsmst);
-colorim = uint8(colorim);
-
-figure; imshow(colorim,[]);
-axis tight
-
-data_empupil.display.colorim = colorim;
-% save backup
-imwrite(colorim,fullfile(data_empupil.setup.workspace,['SR_Zcol_' flagstr '_backup.tif']));
-
 
 %enable export button
 set(handles.display_export_pushbutton,'Enable','on');
@@ -1779,6 +1861,7 @@ set(handles.pupil_export_pushbutton,'Enable','on');
 set(handles.pupil_showPSFs_pushbutton,'Enable','on');
 set(handles.pupil_show_pupil_pushbutton,'Enable','on');
 set(handles.pupil_show_zernike_pushbutton,'Enable','on');
+set(handles.pupil_showPSFs_fixed_pushbutton,'Enable','on');
 
 
 
@@ -1808,7 +1891,7 @@ function pupil_showPSFs_pushbutton_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 global data_empupil
 
-disp('Show the Reassembled and EMpupil PSFs ...')
+disp('Show the Reassembled and INSPR PSFs ...')
 % data_empupil.probj.genPRfigs('PSF');
 genPupilfigs(data_empupil.probj, 'PSF',data_empupil.setup.workspace);
 
@@ -2104,3 +2187,139 @@ function display_import_edit_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+% --- Executes on button press in recon_bg_checkbox.
+function recon_bg_checkbox_Callback(hObject, eventdata, handles)
+% hObject    handle to recon_bg_checkbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of recon_bg_checkbox
+
+global data_empupil
+
+if get(handles.recon_bg_checkbox,'Value')==1
+    data_empupil.recon.is_bg = 1;
+else
+    data_empupil.recon.is_bg = 0;
+end
+
+
+% --- Executes on button press in data_bg_checkbox.
+function data_bg_checkbox_Callback(hObject, eventdata, handles)
+% hObject    handle to data_bg_checkbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of data_bg_checkbox
+
+global data_empupil
+
+if get(handles.data_bg_checkbox,'Value')==1
+    data_empupil.setup.is_bg = 1;
+    set(handles.data_show_bg_pushbutton,'Enable','on');
+else
+    data_empupil.setup.is_bg = 0;
+    set(handles.data_show_bg_pushbutton,'Enable','off');
+end
+
+
+% --- Executes on button press in data_show_bg_pushbutton.
+function data_show_bg_pushbutton_Callback(hObject, eventdata, handles)
+% hObject    handle to data_show_bg_pushbutton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global data_empupil
+
+if isfield(data_empupil,'bg_img') 
+    
+    disp('Show background ...')
+    figure; imshow(median(data_empupil.bg_img,3),[]);
+    axis tight
+    title('Background image');
+    
+else
+    msgbox('Please import the data!');
+end
+
+
+% --- Executes on button press in recon_2D_checkbox.
+function recon_2D_checkbox_Callback(hObject, eventdata, handles)
+% hObject    handle to recon_2D_checkbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of recon_2D_checkbox
+
+global data_empupil
+
+if get(handles.recon_2D_checkbox,'Value')==1
+    data_empupil.recon.is_2D = 1;
+    set(handles.recon_pupil_checkbox,'Value',0);
+    set(handles.recon_pupil_checkbox,'Enable','off');
+    set(handles.recon_import_pupil_pushbutton,'Enable','off');
+    set(handles.recon_dc_checkbox,'Value',0);
+    set(handles.recon_dc_checkbox,'Enable','off');
+    set(handles.recon_dc_change_pushbutton,'Enable','off');
+else
+    data_empupil.recon.is_2D = 0;
+    set(handles.recon_pupil_checkbox,'Enable','on');
+    set(handles.recon_dc_checkbox,'Enable','on');
+end
+
+
+% --- Executes on button press in pupil_showPSFs_fixed_pushbutton.
+function pupil_showPSFs_fixed_pushbutton_Callback(hObject, eventdata, handles)
+% hObject    handle to pupil_showPSFs_fixed_pushbutton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+global data_empupil
+
+disp('Show INSPR PSFs at fixed axial positions')
+% genPupilfigs(data_empupil.probj, 'PSF',data_empupil.setup.workspace);
+
+% INSPR PSFs
+z = [-1:0.1:1];
+sz_z = size(z,2);
+zind=[1:2:sz_z];
+R = 128;
+
+PRstruct_e = data_empupil.probj.PRstruct;
+psfobj_e = PSF_zernike(PRstruct_e);
+psfobj_e.Xpos = zeros(1,sz_z);
+psfobj_e.Ypos = zeros(1,sz_z);
+psfobj_e.Zpos = z;
+psfobj_e.Boxsize = R;
+psfobj_e.Pixelsize = data_empupil.setup.Pixelsize; % micron
+psfobj_e.PSFsize = R;
+psfobj_e.nMed = data_empupil.setup.nMed;
+
+% generate PSFs
+psfobj_e.precomputeParam();
+psfobj_e.setPupil();
+psfobj_e.genZernikeMag();
+psfobj_e.genPSF_2();
+psfobj_e.scalePSF('normal');
+
+% show generated PSF images
+INSPR_PSFs = psfobj_e.ScaledPSFs;
+
+RC=64;
+Modpsf = INSPR_PSFs(RC+1-RC/4:RC+1+RC/4,RC+1-RC/4:RC+1+RC/4,:);
+L = length(zind);
+h1 = [];
+figure('Color',[1,1,1],'Name','INSPR PSFs at fixed z positions','Resize','on','Units','normalized','Position',[0.3,0.3,0.43,0.1])
+for ii=1:L
+    h1(ii)=subplot('position',[(ii-1)/(L+1),0.1,1/(L+1),0.8]);      
+    image(double(squeeze(Modpsf(:,:,zind(ii)))),'CDataMapping','scaled','Parent',h1(ii))
+    text(3,3,[num2str(z(zind(ii)),3),'\mum'],'color',[1,1,1]);
+    
+end
+h1(ii+1)=subplot('position',[L/(L+1),0.1,1/(L+1),0.8]); 
+image(double(permute(squeeze(Modpsf(17-10:17+10,17,:)),[2,1])),'CDataMapping','scaled','Parent',h1(ii+1))
+text(3,3,['x-z'],'color',[1,1,1]);
+colormap(jet)
+axis(h1,'equal')
+axis(h1,'off')

@@ -6,32 +6,52 @@
 %                                   West Lafayette, Indiana
 %                                   USA
 %
-%     Author: Fan Xu, Jan 2020
+%     Author: Fan Xu, July 2020
 %%  
-function [subregion_ch1,subregion_ch2,subvar_ch1,subvar_ch2,frame,l,t,offset_seg] = crop_subregion_without_transData(qd1,qd2,tform,boxsz,thresh,setup)
+function [subregion_ch1,subregion_ch2,subvar_ch1,subvar_ch2,frame,l,t,offset_seg] = crop_subregion_without_transData(qd1,qd2,tform,boxsz,thresh,setup,recon)
 
-
-if setup.is_sCMOS   %sCMOS case 
-    % sCMOS parameters
-    offsetim_ch1 = repmat(setup.sCMOS_input.ccdoffset_ch1,[1 1 size(qd1,3)]);
-    offsetim_ch2 = repmat(setup.sCMOS_input.ccdoffset_ch2,[1 1 size(qd2,3)]);
+if recon.isNewdata == 1
+    if setup.is_sCMOS   %sCMOS case
+        % sCMOS parameters
+        offsetim_ch1 = repmat(setup.sCMOS_input.ccdoffset_ch1,[1 1 size(qd1,3)]);
+        offsetim_ch2 = repmat(setup.sCMOS_input.ccdoffset_ch2,[1 1 size(qd2,3)]);
+        
+        varim_ch1 = repmat(setup.sCMOS_input.ccdvar_ch1,[1 1 size(qd1,3)]);
+        varim_ch2 = repmat(setup.sCMOS_input.ccdvar_ch2,[1 1 size(qd2,3)]);
+        
+        gainim_ch1 = repmat(setup.sCMOS_input.gain_ch1,[1 1 size(qd1,3)]);
+        gainim_ch2 = repmat(setup.sCMOS_input.gain_ch2,[1 1 size(qd2,3)]);
+        
+        qd1_in = (qd1 - offsetim_ch1) ./ gainim_ch1;
+        qd2_in = (qd2 - offsetim_ch2) ./ gainim_ch2;
+    else    %EMCCD case
+        qd1_in = (qd1 - setup.offset) /setup.gain;
+        qd2_in = (qd2 - setup.offset) /setup.gain;
+    end
     
-    varim_ch1 = repmat(setup.sCMOS_input.ccdvar_ch1,[1 1 size(qd1,3)]);
-    varim_ch2 = repmat(setup.sCMOS_input.ccdvar_ch2,[1 1 size(qd2,3)]);
+    qd1_in(qd1_in<=0) = 1e-6;
+    qd2_in(qd2_in<=0) = 1e-6;
     
-    gainim_ch1 = repmat(setup.sCMOS_input.gain_ch1,[1 1 size(qd1,3)]);
-    gainim_ch2 = repmat(setup.sCMOS_input.gain_ch2,[1 1 size(qd2,3)]);
-   
-    qd1_in = (qd1 - offsetim_ch1) ./ gainim_ch1;
-    qd2_in = (qd2 - offsetim_ch2) ./ gainim_ch2;
-else    %EMCCD case
-    qd1_in = (qd1 - setup.offset) /setup.gain;
-    qd2_in = (qd2 - setup.offset) /setup.gain;
+else
+    qd1_in = qd1;
+    qd2_in = qd2;
 end
 
-qd1_in(qd1_in<=0) = 1e-6;
-qd2_in(qd2_in<=0) = 1e-6;
 
+% background subtraction
+if (recon.isNewdata == 1 && recon.is_bg == 1) || (recon.isNewdata == 0 && setup.is_bg == 0 && recon.is_bg == 1)
+    filter_n = 101;
+    bg_img_1 = medfilt1(qd1_in,filter_n,[],3);
+    bg_img_2 = medfilt1(qd2_in,filter_n,[],3);
+    
+    subtract_img_1 = qd1_in - bg_img_1;
+    subtract_img_2 = qd2_in - bg_img_2;
+    subtract_img_1(subtract_img_1<=0) = 1e-6;
+    subtract_img_2(subtract_img_2<=0) = 1e-6;
+    
+    qd1_in = subtract_img_1;
+    qd2_in = subtract_img_2;
+end
 
 %transfer qd2 to find center peak
 qd2_trans = imwarp(qd2_in,tform,'cubic','OutputView',imref2d(size(qd2_in)));

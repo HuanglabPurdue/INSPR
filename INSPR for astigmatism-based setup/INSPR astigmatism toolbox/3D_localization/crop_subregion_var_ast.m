@@ -6,27 +6,43 @@
 %                                   West Lafayette, Indiana
 %                                   USA
 %
-%     Author: Fan Xu, October 2019
+%     Author: Fan Xu, July 2020
 %
 %% Script for segmentation from single molecule dataset
 %  input: ims
 %  output: subregion_ch1
 
 %%
-function [subregion_ch1,subvar_ch1,frame,l,t] = crop_subregion_var_ast(data1,boxsz,thresh,setup)
+function [subregion_ch1,subvar_ch1,frame,l,t] = crop_subregion_var_ast(data1,boxsz,thresh,setup,recon)
 
-if setup.is_sCMOS   %sCMOS case 
-    % sCMOS parameters
-    offsetim_in = repmat(setup.sCMOS_input.ccdoffset_ch1,[1 1 size(data1,3)]);
-    varim_in = repmat(setup.sCMOS_input.ccdvar_ch1,[1 1 size(data1,3)]);
-    gainim_in = repmat(setup.sCMOS_input.gain_ch1,[1 1 size(data1,3)]);
+if recon.isNewdata == 1
+    if setup.is_sCMOS   %sCMOS case 
+        % sCMOS parameters
+        offsetim_in = repmat(setup.sCMOS_input.ccdoffset_ch1,[1 1 size(data1,3)]);
+        varim_in = repmat(setup.sCMOS_input.ccdvar_ch1,[1 1 size(data1,3)]);
+        gainim_in = repmat(setup.sCMOS_input.gain_ch1,[1 1 size(data1,3)]);
 
-    data1_in = (data1 - offsetim_in) ./ gainim_in;
-else    %EMCCD case
-    data1_in = (data1 - setup.offset) /setup.gain;
+        data1_in = (data1 - offsetim_in) ./ gainim_in;
+    else    %EMCCD case
+        data1_in = (data1 - setup.offset) /setup.gain;
+    end
+
+    data1_in(data1_in<=0) = 1e-6;
+else
+    data1_in = data1; 
 end
 
-data1_in(data1_in<=0) = 1e-6;
+% background subtraction      
+if (recon.isNewdata == 1 && recon.is_bg == 1) || (recon.isNewdata == 0 && setup.is_bg == 0 && recon.is_bg == 1)
+    filter_n = 101;
+    bg_img = medfilt1(data1_in,filter_n,[],3);
+    
+    subtract_img = data1_in - bg_img;
+    subtract_img(subtract_img<=0) = 1e-6;
+    
+    data1_in = subtract_img;
+end
+
 
 imsz_original = size(data1_in);
 rangemin=[5, 5];

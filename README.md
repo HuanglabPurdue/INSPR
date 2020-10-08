@@ -112,7 +112,7 @@ Note: The target of INSPR is to deal with whole cell and tissue specimens. If th
 * genPupilfigs.m: Script for generating figures of retrieved pupil
 * export2csv.m: Script for exporting to ‘csv’ format
 * srhist_color.m: Script for generating color-coded super-resolution image
-
+* SRreconstructhist.m: Script for generating 2D super-resolution image
 
 **‘Segmentation’ folder**
 * crop_subregion_ast.m: Script for segmentation
@@ -127,6 +127,11 @@ Note: The target of INSPR is to deal with whole cell and tissue specimens. If th
 * cc2.m: Script for calculating 2D cross correlation
 * PRPSF_aber_fromAveZ_ast.m: Script for estimating pupil
 * subregion_normalization.m: Script for normalizing sub-regions
+
+**‘2D localization’ folder**
+* analysis2D_fromGaussian.m: Script for 2D reconstruction
+* loc_gaussian_2D.m: Script for 2D Gaussian fitting
+* SRsCMOS_MLE.mexw64: Mex function for 2D localization
 
 
 **‘3D localization’ folder**
@@ -166,6 +171,16 @@ Please cite INSPR in your publications if it helps your research:
   publisher={Nature Publishing Group}
 }
 ```
+
+# Updated versions
+
+**INSPR 1.1**: Add background subtraction option using temporal median filter. 
+* Note: INSPR supports the background subtraction option in cases with high background. During background subtraction, the statistical properties of the raw detected camera counts will be no longer maintained, it may decrease localization precisions.
+
+**INSPR 1.2**: Add 2D Gaussian fitting option for 2D localization. 
+* Note: Current 2D localization only provides GPU version. If the user chooses this option, please select ‘Run GPU’ checkbox.
+
+
 
 # Acknowledgements
 We would like to thank Karthigeyan Dhanasekaran and Patrick Lusk (Yale University) for sharing the labeling protocol of Nup98 and interpretation of the resolved Nup98 structures. We thank Michael J. Mlodzianoski for initial instrument design, Sha An for help in instrument alignment and sample preparation, and David A. Miller for providing labeling protocols of mitochondria and microtubules. F.X., D.M., S.L., C.B., and F.H. were supported by grants from the NIH (GM119785) and DARPA (D16AP00093). K.P.M. and G.E.L were supported by grants from the NIH (AG051495 and AG050597). Y.B. and S.C. were supported by a grant from the NIH (R01AR071359). Y.W. and P.Y. were supported by a grant from the NIH (1R01EB018659) and Harvard Medical School Dean’s Initiative Grant. 

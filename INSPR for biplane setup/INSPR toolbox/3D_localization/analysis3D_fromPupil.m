@@ -6,7 +6,7 @@
 %                                   West Lafayette, Indiana
 %                                   USA
 %
-%     Author: Fan Xu, August 2019
+%     Author: Fan Xu, July 2020
 %       
 %%
 function srobj = analysis3D_fromPupil(recon, tform, setup_para)
@@ -69,7 +69,7 @@ for nn = 1:recon.dirN
     disp('Image segmentation');
     boxsz = 16;
     thresh = [recon.seg_thresh_low,recon.seg_thresh_high];      
-    [subregion_ch1,subregion_ch2,subvar_ch1,subvar_ch2,frame_num,l,t,offset_seg] = crop_subregion_without_transData(qd1,qd2,tform,boxsz,thresh,setup_para);
+    [subregion_ch1,subregion_ch2,subvar_ch1,subvar_ch2,frame_num,l,t,offset_seg] = crop_subregion_without_transData(qd1,qd2,tform,boxsz,thresh,setup_para,recon);
 
     
     %localzation
@@ -123,6 +123,10 @@ if recon.isRej == 1
     zmask= sobj.loc_z > recon.rej.zmask_high | sobj.loc_z < recon.rej.zmask_low;
     
     totmask=llmask | intmask | uncermask  | zmask;
+    
+    if recon.is_bg == 1
+        totmask= uncermask  | zmask;
+    end
     
     loc_x_keep = sobj.loc_x(~totmask);
     loc_y_keep = sobj.loc_y(~totmask);
