@@ -180,6 +180,7 @@ Please cite INSPR in your publications if it helps your research:
 **INSPR 1.2**: Add 2D Gaussian fitting option for 2D localization. 
 * Note: Current 2D localization only provides GPU version. If the user chooses this option, please select ‘Run GPU’ checkbox.
 
+**INSPR 1.3**: Add the usage information for mouseover events, update GUI interface and related functions, and fix some bugs. 
 
 
 # Acknowledgements
