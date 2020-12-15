@@ -2,14 +2,14 @@ function varargout = INSPR_ast_GUI(varargin)
 % INSPR_ast_GUI MATLAB code for INSPR_ast_GUI.fig
 % This code is used for astigmatism based setup
 %
-% (C) Copyright 2019                The Huang Lab
+% (C) Copyright 2020                The Huang Lab
 %
 %     All rights reserved           Weldon School of Biomedical Engineering
 %                                   Purdue University
 %                                   West Lafayette, Indiana
 %                                   USA
 %
-%     Author: Fan Xu, July 2020
+%     Author: Fan Xu, December 2020
 %
 
 gui_Singleton = 1;
@@ -69,6 +69,9 @@ data_empupil.setup.sCMOS_input = [];
 data_empupil.setup.is_imgsz = 1;    % 0 for image size smaller than 100 x 100 pixels
 data_empupil.setup.is_bg = 0;       %default is no background subtraction
 
+% data parameters
+data_empupil.data.format = 0;   % 0 for 'mat'; 1 for 'tiff'
+
 
 % pupil parameters
 data_empupil.pupil.init_z = zeros(1,21);
@@ -85,6 +88,7 @@ data_empupil.pupil.min_similarity = 0.6; %min similarity in NCC calculation
 data_empupil.pupil.blur_sigma = 2;
 
 % reconstruction parameters
+data_empupil.recon.format = 0;   % 0 for 'mat'; 1 for 'tiff'
 data_empupil.recon.isNewdata = 0;   %Reconstruction parameters
 data_empupil.recon.isNewpupil = 0;
 data_empupil.recon.isSeg = 1;
@@ -114,8 +118,82 @@ data_empupil.display.zm = 5;
 
 %default parameters, load default parameters
 
+%% display usage information in the mouseover event  
+
+% setup module
+handles.setup_workspace_pushbutton.TooltipString = 'set default input and output paths';
+handles.setup_import_pushbutton.TooltipString = 'import General setting parameters';
+handles.setup_set_pushbutton.TooltipString = 'modify setting parameters by users';
+handles.setup_export_pushbutton.TooltipString = 'export setting parameters';
+
+
+% data module
+handles.data_bg_checkbox.TooltipString = 'INSPR supports the background subtraction option in cases with high background. During background subtraction, the statistical properties of the raw detected camera counts will be no longer maintained, it may decrease localization precisions';
+handles.data_import_pushbutton.TooltipString = 'import the single molecule blinking dataset';
+handles.data_show_img_pushbutton.TooltipString = 'display the superimposed image of the single molecule dataset';
+handles.data_show_bg_pushbutton.TooltipString = 'display the background of the single molecule dataset';
+handles.text28.TooltipString = 'INSPR supports ‘Mat’ and ‘Tiff’ format. For ‘Mat’ format, dataset should include variable ‘ims’ containing the height x width x nframe array. For ‘Tiff’ format, dataset should include an image sequence';
+
+
+% segmentation module
+handles.text2.TooltipString = 'sub-region size of the cropped sub-regions from the single molecule dataset (unit: pixels). Recommended value is from 28 to 40';
+handles.text3.TooltipString = 'distance threshold to make sure that each selected sub-region contains only one molecule (unit: pixels). Recommend value is around Box size divide by sqrt(2)';
+handles.text4.TooltipString = 'initial intensity threshold to obtain the candidate sub-regions';
+handles.text5.TooltipString = 'segmentation threshold to select sub-regions with higher photon counts compared to initial candidate sub-regions';
+handles.seg_process_pushbutton.TooltipString = 'crop sub-regions from the dataset.The details can be seen in the software instruction';
+handles.seg_export_pushbutton.TooltipString = 'export the cropped sub-regions';
+handles.text27.TooltipString = 'frame index in the single-molecule dataset';
+handles.seg_show_img_pushbutton.TooltipString = 'show the cropped sub-regions with the given frame index';
+
+% display module
+handles.display_import_pushbutton.TooltipString = 'import the super-resolution reconstruction result by users';
+handles.display_set_pushbutton.TooltipString = 'set display parameters';
+handles.display_show_pushbutton.TooltipString = 'show the x-y view of the reconstructed super-resolution image with each molecule color-coded by its axial position';
+handles.display_export_pushbutton.TooltipString = 'export the super-resolution image';
+
+% INSPR model generation module
+handles.pupil_data_checkbox.TooltipString = 'If this box is selected, the previous sub-regions can be imported. If not selected, INSPR uses the sub-regions from INSPR segmentation module.';
+handles.pupil_import_pushbutton.TooltipString = 'import the sub-regions by users';
+handles.pupil_zernike_checkbox.TooltipString = 'if this box is selected, the users can modify the initial coefficients of 21 Zernike modes (Wyant order, from vertical astigmatism to tertiary spherical aberration)';
+handles.pupil_change_pushbutton.TooltipString = 'modify the initial coefficients of 21 Zernike modes';
+handles.text6.TooltipString = 'three input texts from left to right are minimum axial position, axial step size, and maximum axial position';
+handles.text8.TooltipString = 'lateral and axial positions optimization mode for averaged sub-regions';
+handles.text10.TooltipString = 'number of output Zernike modes (Wyant order)';
+handles.text7.TooltipString = 'number threshold to reject an axial position group which contains fewer sub-regions than this threshold. Recommended value is from 25 to 50.';
+handles.text11.TooltipString = 'iteration number of INSPR model generation. This process usually converged in 6–10 iterations.';
+handles.text12.TooltipString = 'similarity threshold to reject a sub-region with similarity lower than this threshold. Recommended value is from 0.5 to 0.6';
+handles.pupil_process_pushbutton.TooltipString = 'carry out in situ 3D PSF model generation. The details can be seen in the software instruction';
+handles.pupil_stop_pushbutton.TooltipString = 'stop in situ 3D PSF model generation';
+handles.pupil_export_pushbutton.TooltipString = 'export the in situ 3D PSF model';
+handles.pupil_showPSFs_pushbutton.TooltipString = 'show the retrieved PSFs along the axial direction';
+handles.pupil_show_pupil_pushbutton.TooltipString = 'show the retrieved pupil (including its magnitude and phase)';
+handles.pupil_show_zernike_pushbutton.TooltipString = 'show the decomposed Zernike coefficients from the retrieved phase';
+handles.pupil_showPSFs_fixed_pushbutton.TooltipString = 'show the retrieved PSFs at the fixed axial direction';
+handles.pupil_zshift_mode_popupmenu.TooltipString = 'Z shift mode = ‘Shift’, meaning the lateral and axial positions are optimized. Z shift mode = ‘No shift’, meaning the lateral and axial positions are not optimized';
+
+% 3D localization module
+handles.text29.TooltipString = 'INSPR supports ‘Mat’ and ‘Tiff’ format. For ‘Mat’ format, dataset should include variable ‘ims’ containing the height x width x nframe array. For ‘Tiff’ format, dataset should include an image sequence';
+handles.recon_data_checkbox.TooltipString = 'If this box is selected, the single molecule dataset can be imported. If not selected, INSPR uses the dataset from data import module';
+handles.recon_import_data_pushbutton.TooltipString = 'import the single molecule dataset by users';
+handles.recon_pupil_checkbox.TooltipString = 'If this box is selected, in situ 3D PSF model can be imported. If not selected, INSPR toolbox uses the in situ 3D PSF model from INSPR model generation module';
+handles.recon_import_pupil_pushbutton.TooltipString = 'import the in situ 3D PSF model by users';
+handles.recon_seg_checkbox.TooltipString = 'if this box is selected, the threshold can be set to crop sub-regions';
+handles.text14.TooltipString = 'initial and segmentation thresholds. Same as the setting of INSPR segmentation module';
+handles.recon_dc_checkbox.TooltipString = 'Of this box is selected, INSPR will carry out 3D drift correction and volume alignment';
+handles.recon_rej_checkbox.TooltipString = 'If this box is selected, INSPR will carry out the rejection process';
+handles.recon_gpu_checkbox.TooltipString = 'If this box is selected, INPSR will run the GPU version for pupil-based 3D localization, otherwise INSPR will run the CPU version';
+handles.recon_2D_checkbox.TooltipString = '2D Gaussian fitting option for 2D localization. If this box is selected, INPSR will carry out 2D Gaussian fitting';
+handles.recon_bg_checkbox.TooltipString = 'If this box is selected, INPSR will estimate background using temporal median filtering, then carry out background subtraction';
+handles.recon_process_pushbutton.TooltipString = 'carry out super-resolution reconstruction. The details can be seen in the software instruction';
+handles.recon_stop_pushbutton.TooltipString = 'stop super-resolution reconstruction';
+handles.recon_export_pushbutton.TooltipString = 'export super-resolution reconstruction results';
+handles.recon_export_csv_pushbutton.TooltipString = 'export (x, y, z) positions of single molecules by using ‘csv’ format';
+
+
+
 % UIWAIT makes INSPR_ast_GUI wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
+
 
 
 % --- Outputs from this function are returned to the command line.
@@ -167,73 +245,166 @@ function data_import_pushbutton_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 global data_empupil
-[filename,pathname] = uigetfile(fullfile(data_empupil.setup.workspace,'*.mat'),'Select the data');
 
-if isequal(filename,0)
-   disp('User selected Cancel')
-else
-   disp(['User selected ', fullfile(pathname, filename)])
-   
-   set(handles.data_show_img_pushbutton,'Enable','on');
-   set(handles.data_import_edit,'String', filename);
-   set(handles.seg_process_pushbutton,'Enable','on');
-   
-   % load file
-   load([pathname filename]);
-   
-   if ~exist('ims')
-       msgbox('Please check file type: variable should be ims!');
-   else
-       if isfield(data_empupil,'ims')
-           %if import a new data. Make ‘Show subregion’ and ‘Export’ in
-           %Segmentation disable. Make 'Show SR' and 'Export' in Display
-           %disable
-           
-           set(handles.seg_export_pushbutton,'Enable','off');
-           set(handles.seg_show_img_pushbutton,'Enable','off');
-           
-           set(handles.display_show_pushbutton,'Enable','off');
-           set(handles.display_export_pushbutton,'Enable','off');
-       end
-       
-       if data_empupil.setup.is_sCMOS   %sCMOS case
-           % sCMOS parameters
-           offsetim_ch1 = repmat(data_empupil.setup.sCMOS_input.ccdoffset_ch1,[1 1 size(ims,3)]);
-           gainim_ch1 = repmat(data_empupil.setup.sCMOS_input.gain_ch1,[1 1 size(ims,3)]);
-           ims_in = (ims - offsetim_ch1) ./ gainim_ch1;
-       else    %EMCCD case
-           ims_in = (ims - data_empupil.setup.offset) /data_empupil.setup.gain;
-       end  
-       ims_in(ims_in<=0) = 1e-6;
+
+
+% [filename,pathname] = uigetfile(fullfile(data_empupil.setup.workspace,'*.mat'),'Select the data');
+
+
+if data_empupil.data.format == 0    % import 'mat' format        
+    [filename,pathname] = uigetfile(fullfile(data_empupil.setup.workspace,'*.mat'),'Select the data');
+
+    if isequal(filename,0)
+        disp('User selected Cancel')
+        return; 
+    else
+        disp(['User selected ', fullfile(pathname, filename)])
+        
+        set(handles.data_show_img_pushbutton,'Enable','on');
+        set(handles.data_import_edit,'String', filename);
+        set(handles.seg_process_pushbutton,'Enable','on');
+        
+        % load file
+        load([pathname filename]);
+        
+        if ~exist('ims')
+            msgbox('Please check file type: variable should be ims!');
+            return;
+        end
+    end
+else    % import 'tiff' format
+    [filename,pathname] = uigetfile(fullfile(data_empupil.setup.workspace,'*.tif'),'Select the data');
+    
+    if isequal(filename,0)
+        disp('User selected Cancel')
+        return; 
+    else
+        disp(['User selected ', fullfile(pathname, filename)])
+        
+        set(handles.data_show_img_pushbutton,'Enable','on');
+        set(handles.data_import_edit,'String', filename);
+        set(handles.seg_process_pushbutton,'Enable','on');
+             
+        ims = tiffread(fullfile(pathname,filename));    
+        ims = double(ims);
+    end
+end
+
+if isfield(data_empupil,'ims')
+    %if import a new data. Make ‘Show subregion’ and ‘Export’ in
+    %Segmentation disable. Make 'Show SR' and 'Export' in Display
+    %disable
+    
+    set(handles.seg_export_pushbutton,'Enable','off');
+    set(handles.seg_show_img_pushbutton,'Enable','off');
+    
+    set(handles.display_show_pushbutton,'Enable','off');
+    set(handles.display_export_pushbutton,'Enable','off');
+end
+
+if data_empupil.setup.is_sCMOS   %sCMOS case
+    % sCMOS parameters
+    offsetim_ch1 = repmat(data_empupil.setup.sCMOS_input.ccdoffset_ch1,[1 1 size(ims,3)]);
+    gainim_ch1 = repmat(data_empupil.setup.sCMOS_input.gain_ch1,[1 1 size(ims,3)]);
+    ims_in = (ims - offsetim_ch1) ./ gainim_ch1;
+else    %EMCCD case
+    ims_in = (ims - data_empupil.setup.offset) /data_empupil.setup.gain;
+end
+ims_in(ims_in<=0) = 1e-6;
 
 %        data_empupil.ims = ims(:,:,:);
-       data_empupil.display.imagesz = size(ims,1);
-       
-       if (size(ims,1) > 100)
-           data_empupil.setup.is_imgsz = 1;
-       else
-           data_empupil.setup.is_imgsz = 0;
-       end
-       
-        
-       if data_empupil.setup.is_bg == 1
-           filter_n = 101;
-           bg_img = medfilt1(ims_in,filter_n,[],3);           
-           data_empupil.bg_img = bg_img;
-           
-           subtract_img = ims_in - bg_img;
-           subtract_img(subtract_img<=0) = 1e-6;
-           
-           data_empupil.ims = subtract_img;           
-           msgbox('Finish subtracting background and importing data!');
-       else
-           data_empupil.ims = ims_in;           
-           msgbox('Finish importing data!');
-       end
-   end
+data_empupil.display.imagesz = size(ims,1);
+
+if (size(ims,1) > 100)
+    data_empupil.setup.is_imgsz = 1;
+else
+    data_empupil.setup.is_imgsz = 0;
 end
 
 
+if data_empupil.setup.is_bg == 1
+    filter_n = 101;
+    bg_img = medfilt1(ims_in,filter_n,[],3);
+    data_empupil.bg_img = bg_img;
+    
+    subtract_img = ims_in - bg_img;
+    subtract_img(subtract_img<=0) = 1e-6;
+    
+    data_empupil.ims = subtract_img;
+    msgbox('Finish subtracting background and importing data!');
+else
+    data_empupil.ims = ims_in;
+    msgbox('Finish importing data!');
+end
+
+
+
+%% previous import mat file 
+% [filename,pathname] = uigetfile(fullfile(data_empupil.setup.workspace,'*.mat'),'Select the data');
+% 
+% if isequal(filename,0)
+%    disp('User selected Cancel')
+% else
+%    disp(['User selected ', fullfile(pathname, filename)])
+%    
+%    set(handles.data_show_img_pushbutton,'Enable','on');
+%    set(handles.data_import_edit,'String', filename);
+%    set(handles.seg_process_pushbutton,'Enable','on');
+%    
+%    % load file
+%    load([pathname filename]);
+%    
+%    if ~exist('ims')
+%        msgbox('Please check file type: variable should be ims!');
+%    else
+%        if isfield(data_empupil,'ims')
+%            %if import a new data. Make ‘Show subregion’ and ‘Export’ in
+%            %Segmentation disable. Make 'Show SR' and 'Export' in Display
+%            %disable
+%            
+%            set(handles.seg_export_pushbutton,'Enable','off');
+%            set(handles.seg_show_img_pushbutton,'Enable','off');
+%            
+%            set(handles.display_show_pushbutton,'Enable','off');
+%            set(handles.display_export_pushbutton,'Enable','off');
+%        end
+%        
+%        if data_empupil.setup.is_sCMOS   %sCMOS case
+%            % sCMOS parameters
+%            offsetim_ch1 = repmat(data_empupil.setup.sCMOS_input.ccdoffset_ch1,[1 1 size(ims,3)]);
+%            gainim_ch1 = repmat(data_empupil.setup.sCMOS_input.gain_ch1,[1 1 size(ims,3)]);
+%            ims_in = (ims - offsetim_ch1) ./ gainim_ch1;
+%        else    %EMCCD case
+%            ims_in = (ims - data_empupil.setup.offset) /data_empupil.setup.gain;
+%        end  
+%        ims_in(ims_in<=0) = 1e-6;
+% 
+% %        data_empupil.ims = ims(:,:,:);
+%        data_empupil.display.imagesz = size(ims,1);
+%        
+%        if (size(ims,1) > 100)
+%            data_empupil.setup.is_imgsz = 1;
+%        else
+%            data_empupil.setup.is_imgsz = 0;
+%        end
+%        
+%         
+%        if data_empupil.setup.is_bg == 1
+%            filter_n = 101;
+%            bg_img = medfilt1(ims_in,filter_n,[],3);           
+%            data_empupil.bg_img = bg_img;
+%            
+%            subtract_img = ims_in - bg_img;
+%            subtract_img(subtract_img<=0) = 1e-6;
+%            
+%            data_empupil.ims = subtract_img;           
+%            msgbox('Finish subtracting background and importing data!');
+%        else
+%            data_empupil.ims = ims_in;           
+%            msgbox('Finish importing data!');
+%        end
+%    end
+% end
 
 
 
@@ -360,19 +531,19 @@ f_set = figure('Position',[600 100 400 600],'Name','Setup parameters');
 
 %static text
 uicontrol(f_set, 'Style','text','String','Pixel size (µm)','FontSize',10,'Position',[50 470 100 50],...
-    'HorizontalAlignment','left');
+    'HorizontalAlignment','left','TooltipString','effective pixel size on the camera');
 uicontrol(f_set, 'Style','text','String','Refractive index of immersion medium','FontSize',10,'Position',[50 430 115 50],...
-    'HorizontalAlignment','left');
+    'HorizontalAlignment','left','TooltipString','refractive index of the immersion medium of the objective lens');
 uicontrol(f_set, 'Style','text','String','Refractive index of sample medium','FontSize',10,'Position',[50 380 110 50],...
-    'HorizontalAlignment','left');
+    'HorizontalAlignment','left','TooltipString','refractive index of the imaging medium');
 uicontrol(f_set, 'Style','text','String','Lambda (µm)','FontSize',10,'Position',[50 320 100 50],...
-    'HorizontalAlignment','left');
+    'HorizontalAlignment','left','TooltipString','emission wavelength');
 uicontrol(f_set, 'Style','text','String','NA','FontSize',10,'Position',[50 270 100 50],...
-    'HorizontalAlignment','left');
+    'HorizontalAlignment','left','TooltipString','numerical aperture of the objective lens');
 uicontrol(f_set, 'Style','text','String','Camera offset','FontSize',10,'Position',[50 220 100 50],...
-    'HorizontalAlignment','left');
+    'HorizontalAlignment','left','TooltipString','offset on the camera');
 uicontrol(f_set, 'Style','text','String','Camera gain','FontSize',10,'Position',[50 170 100 50],...
-    'HorizontalAlignment','left');
+    'HorizontalAlignment','left','TooltipString','gain on the camera');
 
 %edit 
 h_Pixelsize = uicontrol(f_set, 'Style','edit','String',num2str(data_empupil.setup.Pixelsize),...
@@ -391,6 +562,7 @@ h_gain = uicontrol(f_set, 'Style','edit','String',num2str(data_empupil.setup.gai
     'FontSize',10,'Position',[200 200 150 25]);
 
 
+
 % h_zmask_high = uicontrol(f_rej, 'Style','edit','String',num2str(data_empupil.recon.rej.zmask_high,'%0.3f'),...
 %    'FontSize',10,'Position',[200 180 70 25]);
 %save figure handle
@@ -407,13 +579,13 @@ h_sCMOS_edit = uicontrol(f_set, 'Style','edit','String','',...
     'FontSize',10,'Position',[200 110 150 25]);
 
 h_sCMOS_import = uicontrol(f_set,'Style','pushbutton','String','Import calibration file','Position',[50 110 130 25],'FontSize',10, 'Callback',...
-    {@setup_import_sCMOS_pushbutton_Callback,h_sCMOS_edit});
+    {@setup_import_sCMOS_pushbutton_Callback,h_sCMOS_edit},'TooltipString','import sCMOS calibration file');
 
 h_set.h_sCMOS_edit = h_sCMOS_edit;
 h_set.h_sCMOS_import = h_sCMOS_import;
 h_sCMOS_chk = uicontrol(f_set, 'Style','checkbox','String','sCMOS camera mode','Value',data_empupil.setup.is_sCMOS,...
     'Position',[50 140 200 50],'FontSize',10,...
-    'Callback',{@setup_sCMOS_checkBox_Callback,h_set});
+    'Callback',{@setup_sCMOS_checkBox_Callback,h_set},'TooltipString','If this check box is selected, INSPR will carry out sCMOS calibration. If not selected, INSPR will use EMCCD camera mode, which uses the same offset and gain for each pixel on the camera.');
 
 h_set.h_sCMOS_chk = h_sCMOS_chk;
 
@@ -897,9 +1069,11 @@ global data_empupil
 if get(handles.recon_data_checkbox,'Value')==1
     data_empupil.recon.isNewdata = 1;
     set(handles.recon_import_data_pushbutton,'Enable','on');
+    set(handles.recon_data_format_popupmenu,'Enable','on');
 else
     data_empupil.recon.isNewdata = 0; 
     set(handles.recon_import_data_pushbutton,'Enable','off');
+    set(handles.recon_data_format_popupmenu,'Enable','off');
 end
 
 
@@ -910,7 +1084,15 @@ function recon_import_data_pushbutton_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 global data_empupil
-[filename,pathname] = uigetfile(fullfile(data_empupil.setup.workspace,'*.mat'),'Select the data (you can choose multiple data)...','MultiSelect','on');
+
+if data_empupil.recon.format == 0    % import 'mat' format        
+    [filename,pathname] = uigetfile(fullfile(data_empupil.setup.workspace,'*.mat'),'Select the data (you can choose multiple data)...','MultiSelect','on');
+    
+else    % import 'tiff' format
+    [filename,pathname] = uigetfile(fullfile(data_empupil.setup.workspace,'*.tif'),'Select the data (you can choose multiple data)...','MultiSelect','on');
+end
+
+% [filename,pathname] = uigetfile(fullfile(data_empupil.setup.workspace,'*.mat'),'Select the data (you can choose multiple data)...','MultiSelect','on');
 
 if isequal(filename,0)
    disp('User selected Cancel')
@@ -934,8 +1116,6 @@ else
    
    msgbox({ 'Finish Importing the data path!' ['You choose ' num2str(dirN) ' data'] });
 
-   
-   
 end
 
 function recon_import_data_edit_Callback(hObject, eventdata, handles)
@@ -1190,13 +1370,13 @@ f_rej = figure('Position',[600 200 400 400],'Name','Rejection parameters');
 
 %static text
 uicontrol(f_rej, 'Style','text','String','Min photon','FontSize',10,'Position',[50 300 100 50],...
-    'HorizontalAlignment','left');
+    'HorizontalAlignment','left','TooltipString','photon threshold to reject single molecules with photon counts lower than this value');
 uicontrol(f_rej, 'Style','text','String','LLR','FontSize',10,'Position',[50 250 100 50],...
-    'HorizontalAlignment','left');
+    'HorizontalAlignment','left','TooltipString','log-likelihood ratio (LLR) threshold to reject single molecules with LLR higher than this value');
 uicontrol(f_rej, 'Style','text','String','Max Z uncertainty (µm)','FontSize',10,'Position',[50 200 100 50],...
-    'HorizontalAlignment','left');
+    'HorizontalAlignment','left','TooltipString','localization uncertainty in the z dimension to reject single molecules with uncertainty higher than this value');
 uicontrol(f_rej, 'Style','text','String','Z mask (µm)','FontSize',10,'Position',[50 150 100 50],...
-    'HorizontalAlignment','left');
+    'HorizontalAlignment','left','TooltipString','axial position mask to reject single molecules with axial positions beyond this range');
 
 %edit 
 h_photon  = uicontrol(f_rej, 'Style','edit','String',num2str(data_empupil.recon.rej.min_photon),...
@@ -1305,11 +1485,11 @@ f_dc = figure('Position',[600 200 350 300],'Name','Drift correction parameters')
 
 % static text
 uicontrol(f_dc, 'Style','text','String','Frame bin','FontSize',10,'Position',[50 200 100 50],...
-    'HorizontalAlignment','left');
+    'HorizontalAlignment','left','TooltipString','number of frames used to construct individual 3D volumes for 3D drift correction');
 uicontrol(f_dc, 'Style','text','String','Initial Z offset (nm)','FontSize',10,'Position',[50 150 150 50],...
-    'HorizontalAlignment','left');
+    'HorizontalAlignment','left','TooltipString','axial position offset to avoid negative z positions during 3D volume reconstruction');
 uicontrol(f_dc, 'Style','text','String','Step interval (nm)','FontSize',10,'Position',[50 100 150 50],...
-    'HorizontalAlignment','left');
+    'HorizontalAlignment','left','TooltipString','axial step size for multi-section imaging');
 
 % edit 
 h_frmp  = uicontrol(f_dc, 'Style','edit','String',num2str(data_empupil.recon.dc.frmpfile),...
@@ -1550,11 +1730,14 @@ if data_empupil.recon.is_2D == 1
     end
     
     srim = SRreconstructhist(sz,zm,reconx,recony,0);
-    smoothim = double(gaussf(srim,[1.5 1.5]));
+    srim = double(srim);
+    smoothim = imgaussfilt(srim,[1.5 1.5]);  %    
+%     smoothim = double(gaussf(srim,[1.5 1.5])); 
     imstr = imstretch_linear(smoothim,0,Recon_color_highb,0,255);
     colorim = uint8(imstr);
 
     figure; imshow(colorim,hot(256));
+
     axis tight
     
     data_empupil.display.colorim = colorim;
@@ -2111,11 +2294,18 @@ end
 display('Show segmentation results');
 raw = data_empupil.seg_display.ims_ch1(:,:,num_display)/max(max(data_empupil.seg_display.ims_ch1(:,:,num_display)));
 index_rec = find(data_empupil.seg_display.allcds_mask(:,3) == num_display-1);
+num_detect = length(index_rec);
 
-rec_vector = cat(2,data_empupil.seg_display.t1(index_rec),data_empupil.seg_display.l1(index_rec),repmat(boxsz,length(index_rec),2));
-img_select = insertShape(raw,'Rectangle',rec_vector,'LineWidth',1, 'Color', 'green');
+if num_detect ~= 0
+    rec_vector = cat(2,data_empupil.seg_display.t1(index_rec),data_empupil.seg_display.l1(index_rec),repmat(boxsz,length(index_rec),2));
+    img_select = insertShape(raw,'Rectangle',rec_vector,'LineWidth',1, 'Color', 'green');
+   
+    figure; imshow(img_select);
+else
+    figure; imshow(raw);
+    msgbox('Did not detect sub-region in this frame!');
+end
 
-figure; imshow(img_select);
 axis tight
 title('Segmentation results');
 
@@ -2323,3 +2513,80 @@ text(3,3,['x-z'],'color',[1,1,1]);
 colormap(jet)
 axis(h1,'equal')
 axis(h1,'off')
+
+
+% --- Executes on selection change in data_format_popupmenu.
+function data_format_popupmenu_Callback(hObject, eventdata, handles)
+% hObject    handle to data_format_popupmenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns data_format_popupmenu contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from data_format_popupmenu
+
+global data_empupil
+
+contents = get(handles.data_format_popupmenu,'String'); 
+
+switch contents{get(handles.data_format_popupmenu,'Value')}
+    case 'Mat'
+        data_empupil.data.format = 0;   
+    case 'Tiff'
+        data_empupil.data.format = 1;
+    otherwise
+        data_empupil.data.format = 0;
+end
+
+display(['Select data format is: ' contents{get(handles.data_format_popupmenu,'Value')}]);
+
+
+% --- Executes during object creation, after setting all properties.
+function data_format_popupmenu_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to data_format_popupmenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on selection change in recon_data_format_popupmenu.
+function recon_data_format_popupmenu_Callback(hObject, eventdata, handles)
+% hObject    handle to recon_data_format_popupmenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns recon_data_format_popupmenu contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from recon_data_format_popupmenu
+global data_empupil
+
+contents = get(handles.recon_data_format_popupmenu,'String'); 
+
+switch contents{get(handles.recon_data_format_popupmenu,'Value')}
+    case 'Mat'
+        data_empupil.recon.format = 0;   
+    case 'Tiff'
+        data_empupil.recon.format = 1;
+    otherwise
+        data_empupil.recon.format = 0;
+end
+
+display(['Select data format is: ' contents{get(handles.recon_data_format_popupmenu,'Value')}]);
+
+
+
+
+% --- Executes during object creation, after setting all properties.
+function recon_data_format_popupmenu_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to recon_data_format_popupmenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end

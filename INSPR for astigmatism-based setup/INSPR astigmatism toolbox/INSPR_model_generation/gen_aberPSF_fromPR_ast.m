@@ -35,29 +35,29 @@ for ii = 1 : Numimage
     PRstruct.SigmaX = empupil.blur_sigma;
     PRstruct.SigmaY = empupil.blur_sigma;
     
-%     if abs(label(1)-empupil.init_z(1)) > 0.4
-%         PRstruct.Pupil.phase = zeros(R,R);
-%         PRstruct.Pupil.mag = zeros(R,R);
-%         phaseZ = zeros(1,25);
-% %         phaseZ([5:9]) = label(1:5);%Zernike mode
-%         phaseZ([5:25]) = label;%Zernike mode
-%         
-%         phaseZ(5) = empupil.init_z(1);
-%         
-%         magZ = zeros(1,25);
-%         magZ(1) = 1;
-%         PRstruct.Zernike_phase = phaseZ;
-%         PRstruct.Zernike_mag = magZ;
-%     end
-    PRstruct.Pupil.phase = zeros(R,R);
-    PRstruct.Pupil.mag = zeros(R,R);
-    phaseZ = zeros(1,25);
-    
-    phaseZ([5:25]) = label;%Zernike mode
-    magZ = zeros(1,25);
-    magZ(1) = 1;
-    PRstruct.Zernike_phase = phaseZ;% this generate aberration
-    PRstruct.Zernike_mag = magZ;
+    if abs(label(1)-empupil.init_z(1)) > 0.5
+        PRstruct.Pupil.phase = zeros(R,R);
+        PRstruct.Pupil.mag = zeros(R,R);
+        phaseZ = zeros(1,25);
+%         phaseZ([5:9]) = label(1:5);%Zernike mode
+        phaseZ([5:25]) = label;%Zernike mode
+        
+        phaseZ(5) = empupil.init_z(1);
+        
+        magZ = zeros(1,25);
+        magZ(1) = 1;
+        PRstruct.Zernike_phase = phaseZ;
+        PRstruct.Zernike_mag = magZ;
+    end
+%     PRstruct.Pupil.phase = zeros(R,R);
+%     PRstruct.Pupil.mag = zeros(R,R);
+%     phaseZ = zeros(1,25);
+%     
+%     phaseZ([5:25]) = label;%Zernike mode
+%     magZ = zeros(1,25);
+%     magZ(1) = 1;
+%     PRstruct.Zernike_phase = phaseZ;% this generate aberration
+%     PRstruct.Zernike_mag = magZ;
     
     %% generate reference Z images in Plane1
     psfobj = PSF_zernike(PRstruct);
@@ -72,17 +72,17 @@ for ii = 1 : Numimage
     
     psfobj.precomputeParam();
 
-%     if abs(label(1)-empupil.init_z(1)) > 0.4
-%         psfobj.genZernike();
-%         psfobj.genPupil();
-%         psfobj.genPSF_2();
-%     else
-%         psfobj.setPupil();
-%         psfobj.genPSF_2();
-%     end
-    psfobj.genZernike();
-    psfobj.genPupil();
-    psfobj.genPSF_2();
+    if abs(label(1)-empupil.init_z(1)) > 0.5
+        psfobj.genZernike();
+        psfobj.genPupil();
+        psfobj.genPSF_2();
+    else
+        psfobj.setPupil();
+        psfobj.genPSF_2();
+    end
+%     psfobj.genZernike();
+%     psfobj.genPupil();
+%     psfobj.genPSF_2();
     
     psfobj.scalePSF('normal');
     %% add I, bg

@@ -50,7 +50,12 @@ for nn = 1:recon.dirN
     
     disp(['...Processing Data   ' int2str(nn)]);    
     if recon.isNewdata == 1
-        load([recon.datapath, recon.datafile_name{nn}]);
+        if recon.format == 0
+            load([recon.datapath, recon.datafile_name{nn}]);
+        else
+            ims = tiffread([recon.datapath, recon.datafile_name{nn}]);
+            ims = double(ims);
+        end
     else
         ims = recon.ims;
     end
