@@ -2449,7 +2449,7 @@ if get(handles.recon_2D_checkbox,'Value')==1
     set(handles.recon_pupil_checkbox,'Value',0);
     set(handles.recon_pupil_checkbox,'Enable','off');
     set(handles.recon_import_pupil_pushbutton,'Enable','off');
-    set(handles.recon_dc_checkbox,'Value',0);
+%     set(handles.recon_dc_checkbox,'Value',0);
     set(handles.recon_dc_checkbox,'Enable','off');
     set(handles.recon_dc_change_pushbutton,'Enable','off');
 else
