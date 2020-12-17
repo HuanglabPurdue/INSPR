@@ -1,13 +1,13 @@
 %%
 % Script for estimating in situ 3D PSF  
-% (C) Copyright 2019                The Huang Lab
+% (C) Copyright 2020                The Huang Lab
 %
 %     All rights reserved           Weldon School of Biomedical Engineering
 %                                   Purdue University
 %                                   West Lafayette, Indiana
 %                                   USA
 %
-%     Author: Fan Xu, August 2019
+%     Author: Fan Xu, December 2020
 %           
 function probj = INSPR_model_generation(subregion_ch1,subregion_ch2,setup,pupil_para)
 
@@ -17,7 +17,7 @@ empupil = [];
 %% setup parameters     
 empupil.NA = setup.NA;
 empupil.Lambda = setup.Lambda;
-empupil.nMed = setup.nMed;
+empupil.nMed = setup.RefractiveIndex;
 empupil.Pixelsize = setup.Pixelsize;   
 %When index mismatch: Dist' = Dist * sample_med / immersion_med
 empupil.biplane_dist = setup.biplane_dist * setup.nMed / setup.RefractiveIndex;   %um 

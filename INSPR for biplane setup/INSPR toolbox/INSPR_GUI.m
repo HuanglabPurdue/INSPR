@@ -1,14 +1,14 @@
 function varargout = INSPR_GUI(varargin)
 % INSPR_GUI MATLAB code for INSPR_GUI.fig
 %
-% (C) Copyright 2019                The Huang Lab
+% (C) Copyright 2020                The Huang Lab
 %
 %     All rights reserved           Weldon School of Biomedical Engineering
 %                                   Purdue University
 %                                   West Lafayette, Indiana
 %                                   USA
 %
-%     Author: Fan Xu, July 2020
+%     Author: Fan Xu, December 2020
 %
 
 gui_Singleton = 1;
@@ -115,6 +115,88 @@ data_empupil.display.imagesz = 256;
 data_empupil.display.zm = 5;
 
 %default parameters, load default parameters
+
+
+%% display usage information in the mouseover event  
+
+% setup module
+handles.setup_workspace_pushbutton.TooltipString = 'set default input and output paths';
+handles.setup_import_pushbutton.TooltipString = 'import general setting parameters';
+handles.setup_set_pushbutton.TooltipString = 'modify setting parameters by users';
+handles.setup_export_pushbutton.TooltipString = 'export setting parameters';
+
+
+% data module
+handles.data_bg_checkbox.TooltipString = 'INSPR supports the background subtraction option in cases with high background. During background subtraction, the statistical properties of the raw detected camera counts will be no longer maintained, it may decrease localization precisions';
+handles.data_import_pushbutton.TooltipString = 'import the single molecule blinking dataset';
+handles.data_show_img_pushbutton.TooltipString = 'display the projection images of the single molecule dataset';
+handles.data_show_bg_pushbutton.TooltipString = 'display the background of the single molecule dataset';
+handles.data_show_merge_pushbutton.TooltipString = 'show the overlaid projection images from plane 1 (red) and plane 2 (green)';
+
+% biplane registration module
+handles.registration_import_pushbutton.TooltipString = 'import the alignment calibration file to align the images from plane 2 to plane 1';
+handles.registration_cal_pushbutton.TooltipString = 'calculate the position relationship between two detection planes using affine transformation';
+handles.registration_process_pushbutton.TooltipString = 'align the images from plane 2 to plane 1 based on the alignment calibration file';
+handles.registration_export_pushbutton.TooltipString = 'export the alignment calibration file';
+handles.registration_merge_pushbutton.TooltipString = 'show the overlaid projection images from both planes after alignment calibration';
+
+
+% segmentation module
+handles.text2.TooltipString = 'sub-region size of the cropped sub-regions from the single molecule dataset (unit: pixels). Recommended value is from 28 to 40';
+handles.text3.TooltipString = 'distance threshold to make sure that each selected sub-region contains only one molecule (unit: pixels). Recommend value is around Box size divide by sqrt(2)';
+handles.text4.TooltipString = 'initial intensity threshold to obtain the candidate sub-regions';
+handles.text5.TooltipString = 'segmentation threshold to select sub-regions with higher photon counts compared to initial candidate sub-regions';
+handles.seg_process_pushbutton.TooltipString = 'crop sub-regions from the dataset.The details can be seen in the software instruction';
+handles.seg_export_pushbutton.TooltipString = 'export the cropped sub-regions';
+handles.text27.TooltipString = 'frame index in the single-molecule dataset';
+handles.seg_show_img_pushbutton.TooltipString = 'show the cropped sub-regions with the given frame index';
+
+% display module
+handles.display_import_pushbutton.TooltipString = 'import the 3D super-resolution reconstruction result by users';
+handles.display_set_pushbutton.TooltipString = 'set display parameters';
+handles.display_show_pushbutton.TooltipString = 'show the x-y view of the reconstructed super-resolution image with each molecule color-coded by its axial position';
+handles.display_export_pushbutton.TooltipString = 'export 3D the super-resolution image';
+
+% INSPR model generation module
+handles.pupil_data_checkbox.TooltipString = 'If this box is selected, the previous sub-regions can be imported. If not selected, INSPR uses the sub-regions from INSPR segmentation module.';
+handles.pupil_import_pushbutton.TooltipString = 'import the sub-regions by users';
+handles.pupil_zernike_checkbox.TooltipString = 'If this box is selected, the users can modify the initial coefficients of 21 Zernike modes (Wyant order, from vertical astigmatism to tertiary spherical aberration)';
+handles.pupil_change_pushbutton.TooltipString = 'modify the initial coefficients of 21 Zernike modes';
+handles.text6.TooltipString = 'three input texts from left to right are minimum axial position, axial step size, and maximum axial position';
+handles.text24.TooltipString = 'lateral alignment mode';
+handles.text8.TooltipString = 'lateral and axial positions optimization mode for averaged sub-regions';
+handles.text10.TooltipString = 'number of output Zernike modes (Wyant order)';
+handles.text7.TooltipString = 'number threshold to reject an axial position group which contains fewer sub-regions than this threshold. Recommended value is from 25 to 50.';
+handles.text11.TooltipString = 'iteration number of INSPR model generation. This process usually converged in 6–10 iterations.';
+handles.text12.TooltipString = 'similarity threshold to reject a sub-region with similarity lower than this threshold. Recommended value is from 0.5 to 0.6';
+handles.pupil_process_pushbutton.TooltipString = 'carry out in situ 3D PSF model generation. The details can be seen in the software instruction';
+handles.pupil_stop_pushbutton.TooltipString = 'stop in situ 3D PSF model generation';
+handles.pupil_export_pushbutton.TooltipString = 'export the in situ 3D PSF model';
+handles.pupil_showPSFs_pushbutton.TooltipString = 'show the retrieved PSFs along the axial direction';
+handles.pupil_show_pupil_pushbutton.TooltipString = 'show the retrieved pupil (including its magnitude and phase)';
+handles.pupil_show_zernike_pushbutton.TooltipString = 'show the decomposed Zernike coefficients from the retrieved phase';
+handles.pupil_showPSFs_fixed_pushbutton.TooltipString = 'show the retrieved PSFs at the fixed axial direction';
+handles.pupil_zshift_mode_popupmenu.TooltipString = 'Z shift mode = ‘Shift’, meaning the lateral and axial positions are optimized. Z shift mode = ‘No shift’, meaning the lateral and axial positions are not optimized';
+handles.pupil_xyshift_mode_popupmenu.TooltipString = 'XY_shift_mode = ‘Separate shift’, meaning 2D alignment is carried out independently for each plane. XY_shift_mode = ‘Together shift’, meaning 2D alignment is carried out for two planes together. The default option is ‘Together shift’';
+
+% 3D localization module
+handles.recon_data_checkbox.TooltipString = 'If this box is selected, the single molecule dataset can be imported. If not selected, INSPR uses the dataset from data import module';
+handles.recon_import_data_pushbutton.TooltipString = 'import the single molecule dataset by users';
+handles.recon_tform_checkbox.TooltipString = 'If this box is selected, the alignment calibration file can be imported. If not selected, INSPR toolbox uses the calibration file from biplane registration module';
+handles.recon_import_tform_pushbutton.TooltipString = 'import the alignment calibration file by users';
+handles.recon_pupil_checkbox.TooltipString = 'If this box is selected, in situ 3D PSF model can be imported. If not selected, INSPR toolbox uses the in situ 3D PSF model from INSPR model generation module';
+handles.recon_import_pupil_pushbutton.TooltipString = 'import the in situ 3D PSF model by users';
+handles.recon_seg_checkbox.TooltipString = 'If this box is selected, the threshold can be set to crop sub-regions';
+handles.text14.TooltipString = 'initial and segmentation thresholds. Same as the setting of INSPR segmentation module';
+handles.recon_dc_checkbox.TooltipString = 'If this box is selected, INSPR will carry out 3D drift correction and volume alignment';
+handles.recon_rej_checkbox.TooltipString = 'If this box is selected, INSPR will carry out the rejection process';
+handles.recon_gpu_checkbox.TooltipString = 'If this box is selected, INPSR will run the GPU version for pupil-based 3D localization, otherwise INSPR will run the CPU version';
+handles.recon_bg_checkbox.TooltipString = 'If this box is selected, INPSR will estimate background using temporal median filtering, then carry out background subtraction';
+handles.recon_process_pushbutton.TooltipString = 'carry out 3D super-resolution reconstruction. The details can be seen in the software instruction';
+handles.recon_stop_pushbutton.TooltipString = 'stop 3D super-resolution reconstruction';
+handles.recon_export_pushbutton.TooltipString = 'export super-resolution reconstruction results';
+handles.recon_export_csv_pushbutton.TooltipString = 'export (x, y, z) positions of single molecules by using ‘csv’ format';
+
 
 % UIWAIT makes INSPR_GUI wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
@@ -528,21 +610,21 @@ f_set = figure('Position',[600 100 400 600],'Name','Setup parameters');
 
 %static text
 uicontrol(f_set, 'Style','text','String','Biplane distance (µm)','FontSize',10,'Position',[50 520 140 50],...
-    'HorizontalAlignment','left');
+    'HorizontalAlignment','left','TooltipString','distance between two detection planes in a biplane configuration');
 uicontrol(f_set, 'Style','text','String','Pixel size (µm)','FontSize',10,'Position',[50 470 100 50],...
-    'HorizontalAlignment','left');
+    'HorizontalAlignment','left','TooltipString','effective pixel size on the camera');
 uicontrol(f_set, 'Style','text','String','Refractive index of immersion medium','FontSize',10,'Position',[50 430 115 50],...
-    'HorizontalAlignment','left');
+    'HorizontalAlignment','left','TooltipString','refractive index of the immersion medium of the objective lens');
 uicontrol(f_set, 'Style','text','String','Refractive index of sample medium','FontSize',10,'Position',[50 380 110 50],...
-    'HorizontalAlignment','left');
+    'HorizontalAlignment','left','TooltipString','refractive index of the imaging medium');
 uicontrol(f_set, 'Style','text','String','Lambda (µm)','FontSize',10,'Position',[50 320 100 50],...
-    'HorizontalAlignment','left');
+    'HorizontalAlignment','left','TooltipString','emission wavelength');
 uicontrol(f_set, 'Style','text','String','NA','FontSize',10,'Position',[50 270 100 50],...
-    'HorizontalAlignment','left');
+    'HorizontalAlignment','left','TooltipString','numerical aperture of the objective lens');
 uicontrol(f_set, 'Style','text','String','Camera offset','FontSize',10,'Position',[50 220 100 50],...
-    'HorizontalAlignment','left');
+    'HorizontalAlignment','left','TooltipString','offset on the camera');
 uicontrol(f_set, 'Style','text','String','Camera gain','FontSize',10,'Position',[50 170 100 50],...
-    'HorizontalAlignment','left');
+    'HorizontalAlignment','left','TooltipString','gain on the camera');
 
 %edit 
 h_biplane_dist  = uicontrol(f_set, 'Style','edit','String',num2str(data_empupil.setup.biplane_dist),...
@@ -578,13 +660,13 @@ h_sCMOS_edit = uicontrol(f_set, 'Style','edit','String','',...
     'FontSize',10,'Position',[200 110 150 25]);
 
 h_sCMOS_import = uicontrol(f_set,'Style','pushbutton','String','Import calibration file','Position',[50 110 130 25],'FontSize',10, 'Callback',...
-    {@setup_import_sCMOS_pushbutton_Callback,h_sCMOS_edit});
+    {@setup_import_sCMOS_pushbutton_Callback,h_sCMOS_edit},'TooltipString','import sCMOS calibration file');
 
 h_set.h_sCMOS_edit = h_sCMOS_edit;
 h_set.h_sCMOS_import = h_sCMOS_import;
 h_sCMOS_chk = uicontrol(f_set, 'Style','checkbox','String','sCMOS camera mode','Value',data_empupil.setup.is_sCMOS,...
     'Position',[50 140 200 50],'FontSize',10,...
-    'Callback',{@setup_sCMOS_checkBox_Callback,h_set});
+    'Callback',{@setup_sCMOS_checkBox_Callback,h_set},'TooltipString','If this check box is selected, INSPR will carry out sCMOS calibration. If not selected, INSPR will use EMCCD camera mode, which uses the same offset and gain for each pixel on the camera');
 
 h_set.h_sCMOS_chk = h_sCMOS_chk;
 
@@ -1443,13 +1525,13 @@ f_rej = figure('Position',[600 200 400 400],'Name','Rejection parameters');
 
 %static text
 uicontrol(f_rej, 'Style','text','String','Min photon','FontSize',10,'Position',[50 300 100 50],...
-    'HorizontalAlignment','left');
+    'HorizontalAlignment','left','TooltipString','photon threshold to reject single molecules with photon counts lower than this value');
 uicontrol(f_rej, 'Style','text','String','LLR','FontSize',10,'Position',[50 250 100 50],...
-    'HorizontalAlignment','left');
+    'HorizontalAlignment','left','TooltipString','log-likelihood ratio (LLR) threshold to reject single molecules with LLR higher than this value');
 uicontrol(f_rej, 'Style','text','String','Max Z uncertainty (µm)','FontSize',10,'Position',[50 200 100 50],...
-    'HorizontalAlignment','left');
+    'HorizontalAlignment','left','TooltipString','localization uncertainty in the z dimension to reject single molecules with uncertainty higher than this value');
 uicontrol(f_rej, 'Style','text','String','Z mask (µm)','FontSize',10,'Position',[50 150 100 50],...
-    'HorizontalAlignment','left');
+    'HorizontalAlignment','left','TooltipString','axial position mask to reject single molecules with axial positions beyond this range');
 
 %edit 
 h_photon  = uicontrol(f_rej, 'Style','edit','String',num2str(data_empupil.recon.rej.min_photon),...
@@ -1558,11 +1640,11 @@ f_dc = figure('Position',[600 200 350 300],'Name','Drift correction parameters')
 
 % static text
 uicontrol(f_dc, 'Style','text','String','Frame bin','FontSize',10,'Position',[50 200 100 50],...
-    'HorizontalAlignment','left');
+    'HorizontalAlignment','left','TooltipString','number of frames used to construct individual 3D volumes for 3D drift correction');
 uicontrol(f_dc, 'Style','text','String','Initial Z offset (nm)','FontSize',10,'Position',[50 150 150 50],...
-    'HorizontalAlignment','left');
+    'HorizontalAlignment','left','TooltipString','axial position offset to avoid negative z positions during 3D volume reconstruction');
 uicontrol(f_dc, 'Style','text','String','Step interval (nm)','FontSize',10,'Position',[50 100 150 50],...
-    'HorizontalAlignment','left');
+    'HorizontalAlignment','left','TooltipString','axial step size for multi-section imaging');
 
 % edit 
 h_frmp  = uicontrol(f_dc, 'Style','edit','String',num2str(data_empupil.recon.dc.frmpfile),...
@@ -2427,25 +2509,42 @@ end
 display('Show segmentation results in Channel 1');
 raw = data_empupil.seg_display.ims_ch1(:,:,num_display)/max(max(data_empupil.seg_display.ims_ch1(:,:,num_display)));
 index_rec = find(data_empupil.seg_display.allcds_mask(:,3) == num_display-1);
+num_detect = length(index_rec);
 
-rec_vector = cat(2,data_empupil.seg_display.t1(index_rec),data_empupil.seg_display.l1(index_rec),repmat(boxsz,length(index_rec),2));
-img_select = insertShape(raw,'Rectangle',rec_vector,'LineWidth',1, 'Color', 'green');
+if num_detect ~= 0
+    rec_vector = cat(2,data_empupil.seg_display.t1(index_rec),data_empupil.seg_display.l1(index_rec),repmat(boxsz,length(index_rec),2));
+    img_select = insertShape(raw,'Rectangle',rec_vector,'LineWidth',1, 'Color', 'green');
+    
+    figure; imshow(img_select);
+    axis tight
+    title('Plane 1');
+else
+    figure; imshow(raw);
+    axis tight
+    title('Plane 1');
+end
 
-figure; imshow(img_select);
-axis tight
-title('Plane 1');
 
 %
 display('Show segmentation results in Channel 2');
 raw = data_empupil.seg_display.ims_ch2(:,:,num_display)/max(max(data_empupil.seg_display.ims_ch2(:,:,num_display)));
 index_rec = find(data_empupil.seg_display.allcds_mask(:,3) == num_display-1);
+num_detect = length(index_rec);
 
-rec_vector = cat(2,data_empupil.seg_display.t1(index_rec),data_empupil.seg_display.l1(index_rec),repmat(boxsz,length(index_rec),2));
-img_select = insertShape(raw,'Rectangle',rec_vector,'LineWidth',1, 'Color', 'green');
+if num_detect ~= 0 
+    rec_vector = cat(2,data_empupil.seg_display.t1(index_rec),data_empupil.seg_display.l1(index_rec),repmat(boxsz,length(index_rec),2));
+    img_select = insertShape(raw,'Rectangle',rec_vector,'LineWidth',1, 'Color', 'green');
+    
+    figure; imshow(img_select);
+    axis tight
+    title('Plane 2');
+else
+    figure; imshow(raw);
+    axis tight
+    title('Plane 2');
+    msgbox('Did not detect sub-region in this frame!');
+end
 
-figure; imshow(img_select);
-axis tight
-title('Plane 2');
     
 
 
