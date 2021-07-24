@@ -2531,7 +2531,7 @@ contents = get(handles.data_format_popupmenu,'String');
 switch contents{get(handles.data_format_popupmenu,'Value')}
     case 'Mat'
         data_empupil.data.format = 0;   
-    case 'Tiff'
+    case 'tiff (multipage tiff)'
         data_empupil.data.format = 1;
     otherwise
         data_empupil.data.format = 0;
